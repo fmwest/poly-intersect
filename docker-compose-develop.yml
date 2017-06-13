@@ -13,5 +13,5 @@ develop:
     LOCAL_URL: http://172.17.0.1:5700
   command: develop
   volumes:
-    - ./ps:/opt/ps/ps
+    - ./landrights:/opt/landrights/landrights
   restart: always

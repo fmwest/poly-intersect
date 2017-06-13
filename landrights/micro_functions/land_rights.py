@@ -5,8 +5,8 @@ from shapely.geometry.polygon import Polygon
 from shapely.ops import transform
 import pyproj
 from functools import partial
-from ps.micro_functions.dissolve_buffer import dissolve_and_buffer
-from ps.micro_functions.dissolve import verify_polygons
+from landrights.micro_functions.dissolve_buffer import dissolve_and_buffer
+from landrights.micro_functions.dissolve import verify_polygons
 import logging
 
 

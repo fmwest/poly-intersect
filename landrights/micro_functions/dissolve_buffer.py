@@ -4,7 +4,7 @@ from shapely.geometry.multipolygon import MultiPolygon
 from shapely.ops import transform, unary_union
 import pyproj
 from functools import partial
-from ps.micro_functions.dissolve import dissolve_polys
+from landrights.micro_functions.dissolve import dissolve_polys
 
 def buffer_polys(polys, dist_10km = 10000, dist_50km = 50000):
     buffer_10km = polys.buffer(dist_10km)
@@ -30,7 +30,7 @@ def dissolve_and_buffer(aoi, return_shapely_buffers=False):
     if return_shapely_buffers:
         return user_polys, user_polys_buffer10km, user_polys_buffer50km
 
-    from ps.micro_functions.dissolve import proj_to_wgs84
+    from landrights.micro_functions.dissolve import proj_to_wgs84
     wgs84_user = proj_to_wgs84(user_polys)
     wgs84_10km = proj_to_wgs84(user_polys_buffer10km)
     wgs84_50km = proj_to_wgs84(user_polys_buffer50km)

@@ -1,8 +1,7 @@
 """Main Script"""
 
 import os
-from ps import app
-
+from landrights import app
 
 # This is only used when running locally. When running live, Gunicorn runs
 # the application.

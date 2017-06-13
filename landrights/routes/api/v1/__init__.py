@@ -17,4 +17,4 @@ def error(status=400, detail='Bad Request'):
     }]), status
 
 endpoints = Blueprint('endpoints', __name__)
-import ps.routes.api.v1.ps_router
+import landrights.routes.api.v1.landrights_router

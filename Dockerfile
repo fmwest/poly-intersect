@@ -1,8 +1,8 @@
 FROM python:3.6-alpine
 MAINTAINER David Eitelberg deitelberg@blueraster.com
 
-ENV NAME ps
-ENV USER ps
+ENV NAME landrights
+ENV USER landrights
 
 RUN apk update && apk upgrade && \
    apk add --no-cache --update bash git openssl-dev build-base alpine-sdk \
