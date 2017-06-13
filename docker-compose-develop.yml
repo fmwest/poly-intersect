@@ -4,7 +4,7 @@ develop:
     service: base
   ports:
     - "35733:35730"
-  container_name: python-land-rights
+  container_name: python-land-rights-develop
   environment:
     ENVIRONMENT: dev
     DEBUG: "True"
