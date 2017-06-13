@@ -1,12 +1,22 @@
 {
 	"name": "#(service.name)",
 	"endpoints": [{
-		"path": "/hello",
-		"method": "GET",
+		"path": "/ps/hello",
+		"method": "POST",
 		"binary": true,
 		"redirect": {
-			"method": "GET",
+			"method": "POST",
 			"path": "/api/v1/ps/hello"
+		}
+	},
+	{
+		"path": "/ps/landRights",
+		"method": "POST",
+		"binary": true,
+		"redirect": {
+			"method": "POST",
+			"path": "/api/v1/ps/landRights"
 		}
 	}]
 }
+

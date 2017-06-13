@@ -1,5 +1,5 @@
 FROM python:3.6-alpine
-MAINTAINER Sergio Gordillo sergio.gordillo@vizzuality.com
+MAINTAINER David Eitelberg deitelberg@blueraster.com
 
 ENV NAME ps
 ENV USER ps
@@ -12,6 +12,24 @@ RUN addgroup $USER && adduser -s /bin/bash -D -G $USER $USER
 
 RUN easy_install pip && pip install --upgrade pip
 RUN pip install virtualenv gunicorn gevent
+
+###################################################################################
+#### Install GEOS ####
+ENV GEOS http://download.osgeo.org/geos/geos-3.6.1.tar.bz2
+
+ENV PROCESSOR_COUNT 1
+
+WORKDIR /install-postgis
+
+WORKDIR /install-postgis/geos
+ADD $GEOS /install-postgis/geos.tar.bz2
+RUN tar xf /install-postgis/geos.tar.bz2 -C /install-postgis/geos --strip-components=1
+
+RUN ./configure && make -j $PROCESSOR_COUNT && make install
+RUN pip install shapely
+RUN pip install pyproj
+RUN pip install geojson
+###################################################################################
 
 RUN mkdir -p /opt/$NAME
 RUN cd /opt/$NAME && virtualenv venv && source venv/bin/activate
