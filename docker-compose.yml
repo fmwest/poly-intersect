@@ -1,5 +1,5 @@
 prod:
-  image: vizzuality/python-land:1.0.0${STAGING}
+  image: vizzuality/python-land-rights:1.0.0${STAGING}
   ports:
     - "5700"
   env_file:
