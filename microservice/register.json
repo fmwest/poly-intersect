@@ -1,7 +1,7 @@
 {
 	"name": "#(service.name)",
 	"endpoints": [{
-		"path": "/landrights/hello",
+		"path": "/v1/landrights/hello",
 		"method": "GET",
 		"binary": true,
 		"redirect": {
@@ -10,7 +10,7 @@
 		}
 	},
 	{
-		"path": "/landrights/landRights",
+		"path": "/v1/landrights/landRights",
 		"method": "POST",
 		"binary": true,
 		"redirect": {
