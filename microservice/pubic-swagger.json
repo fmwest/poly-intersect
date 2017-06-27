@@ -1,8 +1,8 @@
 {
     "swagger": "1.0",
     "info": {
-        "title": "python-land-rights",
-        "description": "python-land-rights-develop",
+        "title": "python-poly_intersect",
+        "description": "python-poly_intersect-develop",
         "version": "1.0.0"
     },
     "host": "staging-api.globalforestwatch.org",

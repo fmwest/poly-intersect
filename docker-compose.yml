@@ -1,5 +1,5 @@
 prod:
-  image: vizzuality/python-land-rights:1.0.0${STAGING}
+  image: vizzuality/python-poly_intersect:1.0.0${STAGING}
   ports:
     - "5700"
   env_file:
@@ -10,4 +10,4 @@ prod:
   log_driver: "syslog"
   log_opt:
       syslog-address: ${SYSLOG_ADDRESS}
-      tag: python-land-rights${STAGING}
+      tag: python-poly_intersect${STAGING}

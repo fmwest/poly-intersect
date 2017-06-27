@@ -5,16 +5,16 @@ from shapely.geometry.polygon import Polygon
 from shapely.ops import transform
 import pyproj
 from functools import partial
-from landrights.micro_functions.dissolve_buffer import dissolve_and_buffer
-from landrights.micro_functions.dissolve import verify_polygons
+from polyIntersect.micro_functions.dissolve_buffer import dissolve_and_buffer, convert_to_geojson
+from polyIntersect.micro_functions.dissolve import verify_polygons, proj_to_wgs84
 import logging
 
 
-def get_user_poly_land_rights_intersection(u_polys, lr_json):
-    # Get geometry of land rights polys and calculate intersection polygons
+def get_intersection(u_polys, intersect_polys_json):
+    # Get geometry of intersect polys and calculate intersection polygons
     intersections = []
 
-    loaded_json = gj.loads(lr_json)
+    loaded_json = gj.loads(intersect_polys_json)
 
     for feature in loaded_json['features']:
         poly = shape(feature['geometry'])
@@ -36,12 +36,12 @@ def get_user_poly_land_rights_intersection(u_polys, lr_json):
 
     return all_intersections
 
-def land_rights(user_json, land_rights_json):
+def intersect_area_geom(user_json, intersect_polys_json, return_intersect_geom=False):
     verified = verify_polygons(user_json)
     if verified != True:
         raise AssertionError('{} Error found in user polygon(s) input'.format(verified))
     
-    verified = verify_polygons(land_rights_json)
+    verified = verify_polygons(intersect_polys_json)
     if verified != True:
         raise AssertionError('{} Error found in user polygon(s) input'.format(verified))
 
@@ -53,9 +53,9 @@ def land_rights(user_json, land_rights_json):
     area_10km = buffer_10km.area*0.0001
     area_50km = buffer_50km.area*0.0001
 
-    intersection_user = get_user_poly_land_rights_intersection(user_polys, land_rights_json)
-    intersection_10km = get_user_poly_land_rights_intersection(buffer_10km, land_rights_json)
-    intersection_50km = get_user_poly_land_rights_intersection(buffer_50km, land_rights_json)
+    intersection_user = get_intersection(user_polys, intersect_polys_json)
+    intersection_10km = get_intersection(buffer_10km, intersect_polys_json)
+    intersection_50km = get_intersection(buffer_50km, intersect_polys_json)
 
     # Convert from sq. meters to hectares
     intersection_area_user = intersection_user.area*0.0001
@@ -68,11 +68,24 @@ def land_rights(user_json, land_rights_json):
     pct_overlap_50km = intersection_area_50km / area_50km * 100
 
     result = {}
-    result['area_user'] = user_poly_area
-    result['area_10km'] = area_10km
-    result['area_50km'] = area_50km
+    result['areaHa_user'] = user_poly_area
+    result['areaHa_10km'] = area_10km
+    result['areaHa_50km'] = area_50km
     result['pct_overlap_user'] = pct_overlap_user
     result['pct_overlap_10km'] = pct_overlap_10km
     result['pct_overlap_50km'] = pct_overlap_50km
+
+    if return_intersect_geom:
+        wgs84_user = proj_to_wgs84(intersection_user)
+        wgs84_10km = proj_to_wgs84(intersection_10km)
+        wgs84_50km = proj_to_wgs84(intersection_50km)
+
+        fc_user = convert_to_geojson(wgs84_user, 'user_poly')
+        fc_10km = convert_to_geojson(wgs84_10km, 'buffer_10km')
+        fc_50km = convert_to_geojson(wgs84_50km, 'buffer_50km')
+
+        result['intersect_geom_user'] = fc_user
+        result['intersect_geom_10km'] = fc_10km
+        result['intersect_geom_50km'] = fc_50km
 
     return gj.dumps(result)

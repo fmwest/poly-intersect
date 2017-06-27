@@ -48,11 +48,6 @@ def proj_to_wgs84(polys):
     return polys_wgs84
 
 def dissolve_polys(aoi, return_shapely_dissolve=False):
-    #####===== verify() function commented out for land_rights microservice because verification is done in land_rights.py =====#####
-    #verified = verify_polygons(aoi)
-    #if verified != True:
-    #    raise AssertionError(verified)
-
     user_polys = user_json_to_shapely_polys(aoi)
     user_polys_dissolve = dissolve(user_polys)
 

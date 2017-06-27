@@ -1,7 +1,7 @@
 """Main Script"""
 
 import os
-from landrights import app
+from polyIntersect import app
 
 # This is only used when running locally. When running live, Gunicorn runs
 # the application.

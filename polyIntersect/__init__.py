@@ -10,9 +10,9 @@ import logging
 
 
 from flask import Flask
-from landrights.config import SETTINGS
-from landrights.routes.api.v1 import endpoints, error
-from landrights.utils.files import load_config_json
+from polyIntersect.config import SETTINGS
+from polyIntersect.routes.api.v1 import endpoints, error
+from polyIntersect.utils.files import load_config_json
 import CTRegisterMicroserviceFlask
 
 logging.basicConfig(
@@ -25,14 +25,14 @@ logging.basicConfig(
 app = Flask(__name__)
 
 # Routing
-app.register_blueprint(endpoints, url_prefix='/api/v1/landrights')
+app.register_blueprint(endpoints, url_prefix='/api/v1/polyIntersect')
 
 # CT
 info = load_config_json('register')
 swagger = load_config_json('swagger')
 CTRegisterMicroserviceFlask.register(
     app=app,
-    name='land-rights',
+    name='poly_intersect',
     info=info,
     swagger=swagger,
     mode=CTRegisterMicroserviceFlask.AUTOREGISTER_MODE if os.getenv('ENVIRONMENT') == 'dev' else CTRegisterMicroserviceFlask.NORMAL_MODE,

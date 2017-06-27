@@ -4,7 +4,7 @@ develop:
     service: base
   ports:
     - "35733:35730"
-  container_name: python-land-rights-develop
+  container_name: python-poly_intersect-develop
   environment:
     ENVIRONMENT: dev
     DEBUG: "True"
@@ -13,5 +13,5 @@ develop:
     LOCAL_URL: http://172.17.0.1:5700
   command: develop
   volumes:
-    - ./landrights:/opt/landrights/landrights
+    - ./polyIntersect:/opt/polyIntersect/polyIntersect
   restart: always

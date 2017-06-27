@@ -4,4 +4,4 @@ base:
     - "5700:5700"
   environment:
     PORT: 5700
-  container_name: python-land-rights
+  container_name: python-poly_intersect
