@@ -10,12 +10,21 @@
 		}
 	},
 	{
-		"path": "/v1/polyIntersect/polyIntersect",
+		"path": "/v1/polyIntersect",
 		"method": "POST",
 		"binary": true,
 		"redirect": {
 			"method": "POST",
-			"path": "/api/v1/polyIntersect/polyIntersect"
+			"path": "/api/v1/polyIntersect"
+		}
+	},
+	{
+		"path": "/v1/polyIntersect/geom",
+		"method": "POST",
+		"binary": true,
+		"redirect": {
+			"method": "POST",
+			"path": "/api/v1/polyIntersect/geom"
 		}
 	}]
 }
