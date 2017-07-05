@@ -20,14 +20,21 @@ def hello():
 @endpoints.route('/', strict_slashes=False, methods=['POST'])
 @validate_greeting
 def polyIntersect_area():
-    try: 
+    x = []
+    try:
+        x.append('1')
         from polyIntersect.micro_functions.poly_intersect import intersect_area_geom
+        x.append('2')
         user_poly = str(request.form['user_poly'])
+        x.append(user_poly)
+        x.append('XXXXXXXXXXXXXXX')
         intersect_polys = str(request.form['intersect_polys'])
+        x.append(intersect_polys)
         data = intersect_area_geom(user_poly, intersect_polys)
+        x.append(5)
     except Exception as e:
         logging.info('FAILED: {}'.format(e))
-        return 'FAILED: {}'.format(e)
+        return 'FAILED: {}\n  ERROR: {}'.format(x, e)
     
     if False:
         return error(status=400, detail='Not valid')
