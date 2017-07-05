@@ -4,7 +4,7 @@
 ###############################################################
 
 FROM debian:jessie-slim
-MAINTAINER David Eitelberg deitelberg@blueraster.com
+MAINTAINER David Eitelberg, deitelberg@blueraster.com
 
 ENV NAME polyIntersect
 ENV USER polyIntersect
