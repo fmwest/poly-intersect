@@ -16,7 +16,7 @@ from polyIntersect.serializers import serialize_greeting
 def hello():
     data = 'hello adnan'
     return data
-
+'''
 @endpoints.route('/', strict_slashes=False, methods=['POST'])
 @validate_greeting
 def polyIntersect_area():
@@ -33,7 +33,8 @@ def polyIntersect_area():
     if False:
         return error(status=400, detail='Not valid')
     return data
-
+'''
+'''
 @endpoints.route('/geom', strict_slashes=False, methods=['POST'])
 @validate_greeting
 def polyIntersect_area_geom():
@@ -45,6 +46,24 @@ def polyIntersect_area_geom():
     except Exception as e:
         logging.info('FAILED: {}'.format(e))
         return 'FAILED: {}'.format(e)
+    
+    if False:
+        return error(status=400, detail='Not valid')
+    return data
+'''
+
+@endpoints.route('/', strict_slashes=False, methods=['POST'])
+@validate_greeting
+def polyIntersect_area():
+    x = []
+    try:
+        from polyIntersect.micro_functions.poly_intersect import intersect_area_geom
+        user_poly = str(request.form['user_poly'])
+        arcgis_server_layer = str(request.form['arcgis_server_layer'])
+        data = intersect_area_geom(user_poly, arcgis_server_layer, fields='*', return_intersect_geom=False)
+    except Exception as e:
+        logging.info('FAILED: {}'.format(e))
+        return 'FAILED: {}\n  ERROR: {}'.format(x, e)
     
     if False:
         return error(status=400, detail='Not valid')
