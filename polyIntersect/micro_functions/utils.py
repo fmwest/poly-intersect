@@ -4,6 +4,7 @@ from geomet import wkt as WKT
 import urllib3
 import polyIntersect.micro_functions.urls as urls
 
+
 def verify_polygons(in_json):
     if not in_json:
         raise AssertionError('JSON input is empty.')
