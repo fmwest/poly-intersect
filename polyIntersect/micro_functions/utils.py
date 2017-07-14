@@ -172,6 +172,9 @@ def get_intersect_geom_from_endpoint(ogr_geom, layer, fields, original_epsg=4326
 
     elif layer=='gadmAdm0':
         intersect_polys = http.request('GET', urls.gadmAdm0, fields=query)
+    
+    elif layer=='TreePlantations':
+        intersect_polys = http.request('GET', urls.TreePlantations, fields=query)
 
     else:
         raise AssertionError('Specified intersect_layer ({}) does not exist.'.format(layer))
