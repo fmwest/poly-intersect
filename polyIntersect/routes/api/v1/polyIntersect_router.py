@@ -32,9 +32,8 @@ def polyIntersect_area():
         # Verify that return geom_geom is True or False, if not defined, make it False
         try: return_geom = str(request.form['return_geom'])
         except: return_geom = 'False'
-        if return_geom!='False' and return_geom!='True':
-            assert isinstance(return_geom, bool), 'return_geom is {}, must be True or False (type string)'.format(return_geom)
-        elif return_geom=='False': return_intersect_geom = False
+        assert return_geom=='False' or return_geom=='True', 'return_geom is {}, must be True or False (type string)'.format(return_geom)
+        if return_geom=='False': return_intersect_geom = False
         elif return_geom=='True':  return_intersect_geom = True
 
         data = intersect_area_geom(user_poly, intersect_polys, return_intersect_geom, fields='*')
@@ -60,9 +59,8 @@ def polyIntersect_area_from_endpoint():
         # Verify that return geom_geom is True or False, if not defined, make it False
         try: return_geom = str(request.form['return_geom'])
         except: return_geom = 'False'
-        if return_geom!='False' and return_geom!='True':
-            assert isinstance(return_geom, bool), 'return_geom is {}, must be True or False (type string)'.format(return_geom)
-        elif return_geom=='False': return_intersect_geom = False
+        assert return_geom=='False' or return_geom=='True', 'return_geom is {}, must be True or False (type string)'.format(return_geom)
+        if return_geom=='False': return_intersect_geom = False
         elif return_geom=='True':  return_intersect_geom = True
 
 
