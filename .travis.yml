@@ -12,7 +12,7 @@ install:
   - conda update conda
 
   # Install dependencies
-  - conda env create -f environment.yml python=$TRAVIS_PYTHON_VERSION
+  - conda env create -f environment-ubuntu.yml python=$TRAVIS_PYTHON_VERSION
   - source activate gfw-api
 
   # Dependencies for lint checking only
