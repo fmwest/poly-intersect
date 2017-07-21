@@ -1,3 +1,4 @@
+import json
 
 from os import path
 
@@ -31,8 +32,19 @@ def test_poly_intersect_successful():
     payload['intersect_polys'] = maine_geojson
 
     result = app.post(url, data=payload)
+
     assert result.status_code == 200
     assert result.content_type == 'application/json'
+    assert result.data
+
+    result_obj = json.loads(result.data)
+    assert isinstance(result_obj, dict)
+    assert 'areaHa_10km' in result_obj.keys()
+    assert 'areaHa_50km' in result_obj.keys()
+    assert 'pct_overlap_10km' in result_obj.keys()
+    assert 'pct_overlap_50km' in result_obj.keys()
+    assert 'pct_overlap_user' in result_obj.keys()
+    assert result_obj['pct_overlap_user'] == 100
 
 
 def test_poly_intersect_successful_with_self_intersecting_polygon():
@@ -45,6 +57,8 @@ def test_poly_intersect_successful_with_self_intersecting_polygon():
     result = app.post(url, data=payload)
     assert result.status_code == 200
     assert result.content_type == 'application/json'
+    result_obj = json.loads(result.data)
+    assert isinstance(result_obj, dict)
 
 
 def test_geom_area():
