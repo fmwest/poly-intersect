@@ -11,18 +11,23 @@ from polyIntersect.routes.api.v1 import endpoints, error
 from polyIntersect.validators import validate_greeting
 from polyIntersect.serializers import serialize_greeting
 
+from polyIntersect.micro_functions.poly_intersect import intersect_area_geom
+from polyIntersect.micro_functions.poly_intersect import intersect_area_geom
+
 @endpoints.route('/hello', strict_slashes=False, methods=['GET', 'POST'])
 @validate_greeting
 def hello():
     data = 'hello adnan'
-    return data
+    response = jsonify(data)
+    response.status_code = 200
+    return response
+
 
 @endpoints.route('/', strict_slashes=False, methods=['POST'])
 @validate_greeting
 def polyIntersect_area():
     x = []
     try:
-        from polyIntersect.micro_functions.poly_intersect import intersect_area_geom
         user_poly = str(request.form['user_poly'])
         intersect_polys = str(request.form['intersect_polys'])
         data = intersect_area_geom(user_poly, intersect_polys)
@@ -32,13 +37,16 @@ def polyIntersect_area():
     
     if False:
         return error(status=400, detail='Not valid')
-    return data
+
+    response = jsonify(data)
+    response.status_code = 200
+    return response
+
 
 @endpoints.route('/geom', strict_slashes=False, methods=['POST'])
 @validate_greeting
 def polyIntersect_area_geom():
     try: 
-        from polyIntersect.micro_functions.poly_intersect import intersect_area_geom
         user_poly = str(request.form['user_poly'])
         intersect_polys = str(request.form['intersect_polys'])
         data = intersect_area_geom(user_poly, intersect_polys, return_intersect_geom=True)
@@ -48,4 +56,7 @@ def polyIntersect_area_geom():
     
     if False:
         return error(status=400, detail='Not valid')
-    return data
+
+    response = jsonify(data)
+    response.status_code = 200
+    return response
