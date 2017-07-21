@@ -3,17 +3,14 @@ import geojson as gj
 from geomet import wkt as WKT
 
 def verify_polygons(in_json):
+
     if not in_json:
-        raise AssertionError('JSON input is empty.')
+        raise ValueError('JSON input is empty.')
 
-    try:
-        loaded_json = gj.loads(in_json)
-    except Exception as e:
-        raise AssertionError('Invalid JSON input.\n  ERROR MESSAGE: {}.'.format(e))
+    loaded_json = gj.loads(in_json)
 
-    validation = gj.is_valid(loaded_json)
-    if validation['valid'].lower() != 'yes':
-        raise AssertionError('ERROR MESSAGE: {}'.format(validation['message']))
+    if not 'features' in loaded_json.keys():
+        raise ValueError('JSON input must contain features property')
 
     for feature in loaded_json['features']:
         geom_type = feature['geometry']['type']
