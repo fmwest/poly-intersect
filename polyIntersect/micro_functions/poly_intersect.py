@@ -54,6 +54,6 @@ def intersect_area_geom(user_json, intersect_polys_json, return_intersect_geom=F
         result['pct_overlap_10km'] = pct_overlap_10km
         result['pct_overlap_50km'] = pct_overlap_50km
 
-        return str(result)
+        return result
     except:
         raise
