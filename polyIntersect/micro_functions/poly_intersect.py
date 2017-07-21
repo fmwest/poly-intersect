@@ -2,6 +2,19 @@ import geojson as gj
 import logging
 import polyIntersect.micro_functions.utils as u
 
+
+def dissolve(geom, field):
+    '''
+    '''
+    return False
+
+
+def intersect(geom1, geom2):
+    '''
+    '''
+    return False
+
+
 def intersect_area_geom(user_json, intersect_polys_json, return_intersect_geom=False):
     try:
         #####===== VERIFY THAT INPUT JSON FILES ARE VALID, AND CONTAIN ONLY POLYGONS OR MULTIPOLYGONS =====#####
