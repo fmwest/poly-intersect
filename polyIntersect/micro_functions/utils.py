@@ -2,6 +2,7 @@ from osgeo import ogr, osr
 import geojson as gj
 from geomet import wkt as WKT
 
+
 def verify_polygons(in_json):
 
     if not in_json:
@@ -9,14 +10,15 @@ def verify_polygons(in_json):
 
     loaded_json = gj.loads(in_json)
 
-    if not 'features' in loaded_json.keys():
+    if 'features' not in loaded_json.keys():
         raise ValueError('JSON input must contain features property')
 
     for feature in loaded_json['features']:
         geom_type = feature['geometry']['type']
-        if geom_type.lower() != 'polygon' and geom_type.lower() != 'multipolygon':
-            raise AssertionError('Input JSON contains a feature not of type POLYGON or MULTIPOLYGON.')
+        if 'polygon' not in geom_type.lower():
+            raise ValueError('Input JSON must be of geometry type polygon.')
     return
+
 
 def dissolve_to_single_feature(in_json):
     polys = ogr.Geometry(ogr.wkbMultiPolygon)
@@ -26,6 +28,7 @@ def dissolve_to_single_feature(in_json):
     polys_dissolved = polys.UnionCascaded()
     return polys_dissolved
 
+
 def buffer_and_dissolve_to_single_feature(in_json, distance):
     buffers = ogr.Geometry(ogr.wkbMultiPolygon)
     for feature in gj.loads(in_json)['features']:
@@ -33,6 +36,7 @@ def buffer_and_dissolve_to_single_feature(in_json, distance):
         buffers.AddGeometry(buff)
     buffers_dissolved = buffers.UnionCascaded()
     return buffers_dissolved
+
 
 def project(ogr_geom, centroid, direction, original_epsg=4326):
     wkt_proj = 'PROJCS["World_Azimuthal_Equidistant_custom_center", \
@@ -51,28 +55,31 @@ def project(ogr_geom, centroid, direction, original_epsg=4326):
                     .format(centroid.GetX(), centroid.GetY())
 
     original_sr = osr.SpatialReference()
-    original_sr.ImportFromEPSG(original_epsg) # 4326 = WGS84
-    
+    original_sr.ImportFromEPSG(original_epsg)  # 4326 = WGS84
+
     target_sr = osr.SpatialReference()
     target_sr.ImportFromWkt(wkt_proj)
 
     if direction.lower() == 'to-custom':
         transform = osr.CoordinateTransformation(original_sr, target_sr)
     elif direction.lower() == 'to-original':
-        transform = osr.CoordinateTransformation(target_sr, original_sr) 
+        transform = osr.CoordinateTransformation(target_sr, original_sr)
     else:
-        raise Exception('utils.project \'direction\' parameter invalid. Must be either \'to-original\' or \'to-custom\'')
+        msg = ("utils.project 'direction' parameter invalid."
+               "Must be either 'to-original' or 'to-custom'")
+        raise Exception(msg)
 
     ogr_geom.Transform(transform)
 
     return ogr_geom
 
-def build_buffer(json_in, distance, original_epsg=4326, export_as='OGR', return_to_original_sr=True):
+
+def build_buffer(json_in, distance, original_epsg=4326,
+                 export_as='OGR', return_to_original_sr=True):
     wkt = WKT.dumps(gj.loads(json_in))
-    
     poly = ogr.CreateGeometryFromWkt(wkt)
     centroid = poly.Centroid()
-    
+
     poly_prj = project(poly, centroid, 'to-custom')
 
     buff = poly_prj.Buffer(distance)
@@ -92,7 +99,8 @@ def build_buffer(json_in, distance, original_epsg=4326, export_as='OGR', return_
         elif export_as == 'WKT':
             return buff.ExportToWkt()
         elif export_as == 'OGR':
-            return buf
+            return buff
+
 
 def calculate_area(ogr_geom, original_epsg=4326):
     area_m2 = 0
@@ -100,9 +108,9 @@ def calculate_area(ogr_geom, original_epsg=4326):
 
     if parts > 1:
         for i in range(parts):
-            geom = ogr_geom.GetGeometryRef(i) 
+            geom = ogr_geom.GetGeometryRef(i)
             area_part = project(geom, geom.Centroid(), 'to-custom').GetArea()
-            area_m2+=area_part
+            area_m2 += area_part
     else:
         area_m2 = project(ogr_geom, ogr_geom.Centroid(), 'to-custom').GetArea()
 

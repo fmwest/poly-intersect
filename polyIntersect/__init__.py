@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import json
 import logging
 
 
@@ -30,12 +29,18 @@ app.register_blueprint(endpoints, url_prefix='/api/v1/polyIntersect')
 # CT
 info = load_config_json('register')
 swagger = load_config_json('swagger')
+
+if os.getenv('ENVIRONMENT') == 'dev':
+    mode = CTRegisterMicroserviceFlask.AUTOREGISTER_MODE
+else:
+    mode = CTRegisterMicroserviceFlask.NORMAL_MODE
+
 CTRegisterMicroserviceFlask.register(
     app=app,
     name='poly_intersect',
     info=info,
     swagger=swagger,
-    mode=CTRegisterMicroserviceFlask.AUTOREGISTER_MODE if os.getenv('ENVIRONMENT') == 'dev' else CTRegisterMicroserviceFlask.NORMAL_MODE,
+    mode=mode,
     ct_url=os.getenv('CT_URL'),
     url=os.getenv('LOCAL_URL')
 )
