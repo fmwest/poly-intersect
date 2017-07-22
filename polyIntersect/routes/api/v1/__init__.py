@@ -10,3 +10,4 @@ def error(status=400, detail='Bad Request'):
 
 
 endpoints = Blueprint('endpoints', __name__)
+import polyIntersect.routes.api.v1.polyIntersect_router  # noqa
