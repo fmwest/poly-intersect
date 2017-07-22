@@ -21,7 +21,7 @@ install:
   - python setup.py develop --no-deps
 
 script:
-    - flake8 --ignore E,W
+    - flake8 polyIntersect
 
 notifications:
   email: false
