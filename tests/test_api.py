@@ -4,7 +4,6 @@ from os import path
 
 from polyIntersect import app
 
-app = app.test_client()
 
 fixtures = path.abspath(path.join(path.dirname(__file__), 'fixtures'))
 
@@ -18,20 +17,22 @@ with open(path.join(fixtures, 'self-intersecting.geojson')) as f:
 
 
 def test_hello():
+    test_app = app.test_client()
     url = '/api/v1/polyIntersect/hello?'
-    result = app.get(url)
+    result = test_app.get(url)
     assert result.status_code == 200
     assert result.content_type == 'application/json'
 
 
 def test_poly_intersect_successful():
+    test_app = app.test_client()
     url = '/api/v1/polyIntersect'
 
     payload = {}
     payload['user_poly'] = maine_geojson
     payload['intersect_polys'] = maine_geojson
 
-    result = app.post(url, data=payload)
+    result = test_app.post(url, data=payload)
 
     assert result.status_code == 200
     assert result.content_type == 'application/json'
