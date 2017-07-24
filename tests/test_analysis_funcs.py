@@ -1,5 +1,4 @@
 from os import path
-import geojson as gj
 
 from polyIntersect.micro_functions.poly_intersect import json2ogr
 from polyIntersect.micro_functions.poly_intersect import dissolve
@@ -8,6 +7,7 @@ from polyIntersect.micro_functions.poly_intersect import intersect
 from sample_data import DISSOLVE_ME
 
 fixtures = path.abspath(path.join(path.dirname(__file__), 'fixtures'))
+
 
 def test_dissolve_successful():
     import pdb;pdb.set_trace()
