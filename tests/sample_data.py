@@ -10,3 +10,12 @@ with open(path.join(fixtures, 'self-intersecting.geojson')) as f:
 
 with open(path.join(fixtures, 'dissolve_me.geojson')) as f:
     DISSOLVE_GEOJSON = "".join(f.read().split())
+
+with open(path.join(fixtures, 'intersect_base.geojson')) as f:
+    INTERSECT_BASE_GEOJSON = "".join(f.read().split())
+
+with open(path.join(fixtures, 'intersect_fully_within.geojson')) as f:
+    INTERSECT_FULLY_WITHIN_GEOJSON = "".join(f.read().split())
+
+with open(path.join(fixtures, 'intersect_partially_within.geojson')) as f:
+    INTERSECT_PARTIALLY_WITHIN_GEOJSON = "".join(f.read().split())
