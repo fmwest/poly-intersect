@@ -1,62 +1,12 @@
-import logging
 import json
 import dask
 
 from flask import jsonify, request
 
-from polyIntersect.routes.api.v1 import endpoints, error
+from polyIntersect.routes.api.v1 import endpoints
 from polyIntersect.validators import validate_greeting
 
 import polyIntersect.micro_functions.poly_intersect as analysis_funcs
-
-
-@endpoints.route('/hello', strict_slashes=False, methods=['GET', 'POST'])
-@validate_greeting
-def hello():
-    data = 'hello adnan'
-    response = jsonify(data)
-    response.status_code = 200
-    return response
-
-
-@endpoints.route('/', strict_slashes=False, methods=['POST'])
-@validate_greeting
-def polyIntersect_area():
-    x = []
-    try:
-        user_poly = str(request.form['user_poly'])
-        intersect_polys = str(request.form['intersect_polys'])
-        data = analysis_funcs.intersect_area_geom(user_poly, intersect_polys)
-    except Exception as e:
-        logging.info('FAILED: {}'.format(e))
-        return 'FAILED: {}\n  ERROR: {}'.format(x, e)
-
-    if False:
-        return error(status=400, detail='Not valid')
-
-    response = jsonify(data)
-    response.status_code = 200
-    return response
-
-
-@endpoints.route('/geom', strict_slashes=False, methods=['POST'])
-@validate_greeting
-def polyIntersect_area_geom():
-    try:
-        user_poly = str(request.form['user_poly'])
-        intersect_polys = str(request.form['intersect_polys'])
-        data = intersect_area_geom(user_poly, intersect_polys,
-                                   return_intersect_geom=True)
-    except Exception as e:
-        logging.info('FAILED: {}'.format(e))
-        return 'FAILED: {}'.format(e)
-
-    if False:
-        return error(status=400, detail='Not valid')
-
-    response = jsonify(data)
-    response.status_code = 200
-    return response
 
 
 def create_dag_from_json(graphJson):
@@ -84,37 +34,31 @@ def create_dag_from_json(graphJson):
         func_args = v[1:] if len(v) else []
 
         if func_name == 'geojson':
-            graph[k] = [analysis_funcs.json2ogr] + func_args
+            graph[k] = tuple([analysis_funcs.json2ogr] + func_args)
         else:
-            graph[k] = [getattr(analysis_funcs, func_name)] + func_args
+            graph[k] = tuple([getattr(analysis_funcs, func_name)] + func_args)
 
     return graph
 
 
-def serialize_output(outputs):
-
-    if not isinstance(outputs, list):
-        raise ValueError('outputs must be list')
-
-    for item in outputs:
-        import pdb; pdb.set_trace()
-        # test if it is an ogr object and convert it to geojson
-        pass
-
+def compute(graph, outputs):
+    final_output = {}
+    results = dask.get(graph, outputs)
+    for result, name in zip(results, outputs):
+        if isinstance(result, dict) and 'features' in result.keys():
+            final_output[name] = analysis_funcs.ogr2json(result)
+        else:
+            final_output[name] = result
+    return final_output
 
 
 @endpoints.route('/executeGraph', strict_slashes=False, methods=['POST'])
 @validate_greeting
 def execute_graph_view():
-
     dag = str(request.form['dag'])
     graph = create_dag_from_json(dag)
-
     outputs = json.loads(str(request.form['result_keys']))
-    result_obj = dask.get(dag, outputs)
-    results = get(dsk, outputs)
-    data = serialize_output(results)
-
+    data = compute(graph, outputs)
     response = jsonify(data)
     response.status_code = 200
     return response
