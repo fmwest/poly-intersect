@@ -6,6 +6,7 @@ from polyIntersect import app
 
 app = app.test_client()
 
+
 fixtures = path.abspath(path.join(path.dirname(__file__), 'fixtures'))
 
 

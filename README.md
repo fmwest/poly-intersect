@@ -1,3 +1,6 @@
+
+[![Build Status](https://travis-ci.org/brendancol/poly-intersect.svg?branch=master)](https://travis-ci.org/brendancol/poly-intersect)
+
 # THIS NEEDS A COMPLETE REWORKING FOR THE POLY INTERSECT MICROSERVICE
 # Python Skeleton for Micorservices
 
