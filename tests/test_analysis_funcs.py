@@ -10,7 +10,6 @@ fixtures = path.abspath(path.join(path.dirname(__file__), 'fixtures'))
 
 
 def test_dissolve_successful():
-    import pdb;pdb.set_trace()
     geom = json2ogr(DISSOLVE_GEOJSON)
     geom_diss = dissolve(geom)
     assert geom_diss.GetGeometryCount() == 1
