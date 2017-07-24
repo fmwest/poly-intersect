@@ -1,16 +1,97 @@
 import polyIntersect.micro_functions.utils as u
 
 
-def dissolve(geom, field):
+############################## START FW EDITS ##############################
+
+from dask.multiprocessing import get
+from osgeo import ogr, osr
+import geojson as gj
+from geomet import wkt as WKT
+
+__all__ = ['json2ogr', 'ogr2json', 'dissolve', 'intersect', 'buffer_to_dist', 
+           'get_area_overlap']
+
+def json2ogr(in_json):
     '''
+    Convert geojson object to GDAL geometry
     '''
-    return False
+    geoms = ogr.Geometry(ogr.wkbMultiPolygon)
+    for feature in gj.loads(in_json)['features']:
+        geom = ogr.CreateGeometryFromWkt(WKT.dumps(feature['geometry']))
+        geoms.AddGeometry(geom)
+    geoms_prj = u.project(geoms, geoms.Centroid(), 'to-custom')
+    return geoms_prj
+
+
+def ogr2json(geom):
+    '''
+    Convert GDAL geometry to geojson object
+    '''
+    return geom.ExportToJson()
+
+
+def dissolve(geom, field=None):
+    '''
+    Dissolve a set of geometries on a field, or dissolve fully to a single
+    feature if no field is provided
+
+    *** this function doesn't allow dissolving based on field and can't
+    find a function from osgeo - if we have a need for the field-based
+    dissolve would need to implement something with Fiona/shapely/geopandas
+    ^ add groupby functionality - group on either int or string
+    '''
+    return geom.UnionCascaded()
 
 
 def intersect(geom1, geom2):
     '''
+    Intersect two geometries
     '''
-    return False
+    return geom1.Intersection(geom2)
+
+
+def buffer_to_dist(geom, distance):
+    '''
+    Buffer a geometry with a given distance
+    '''
+    return geom.Buffer(distance)
+
+
+def get_area_overlap(geom, geom_intersect, groupby=None):
+    '''
+    Calculate the area of a geometry and the percent overlap with an intersection
+    of that geometry. Can calculate areas by category using a groupby field
+    ^ add groupby functionality, convert math to numpy
+    '''
+    total_area = u.calculate_area(geom)
+    intersection_area = u.calculate_area(geom_intersect)
+    pct_overlap = 100.0 * intersection_area / total_area
+    return (total_area, pct_overlap)
+
+
+def is_valid(analysis_method):
+    '''
+    Validate that method exists
+    '''
+    return analysis_method in __all__
+
+
+# example dask input for reference:
+graph = {'convert_aoi': (json2ogr, user_json),
+         'convert_intersect': (json2ogr, intersect_json),
+         'dissolve_aoi': (dissolve, 'convert_aoi'),
+         'buffer_aoi': (buffer_to_dist, 'dissolve_aoi', user_dist),
+         'intersect_aoi': (intersect, 'buffer_aoi', 'convert_intersect'),
+         'area_overlap': (get_area_overlap, 'convert_aoi', 'intersect_aoi'),
+         'convert_result': (ogr2json, 'intersect_aoi')}
+
+def process_graph(graph):
+    for func in graph.keys():
+        assert is_valid(func)
+    get(graph, graph.keys())
+
+############################## END FW EDITS ##############################
+
 
 
 def intersect_area_geom(user_json, intersect_polys_json,
