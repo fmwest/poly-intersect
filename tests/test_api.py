@@ -66,7 +66,7 @@ def _test_execute_graph_with_invalid_method():
     assert result.content_type == 'application/json'
 
 
-def test_poly_intersect_successful():
+def _test_poly_intersect_successful():
     url = '/api/v1/polyIntersect'
 
     payload = {}
@@ -89,7 +89,7 @@ def test_poly_intersect_successful():
     assert result_obj['pct_overlap_user'] == 100
 
 
-def test_poly_intersect_successful_with_self_intersecting_polygon():
+def _test_poly_intersect_successful_with_self_intersecting_polygon():
     url = '/api/v1/polyIntersect'
 
     payload = {}
@@ -104,7 +104,7 @@ def test_poly_intersect_successful_with_self_intersecting_polygon():
     assert isinstance(result_obj, dict)
 
 
-def test_geom_area():
+def _test_geom_area():
     url = '/api/v1/polyIntersect/geom'
     payload = {}
     payload['user_poly'] = MAINE_GEOJSON
