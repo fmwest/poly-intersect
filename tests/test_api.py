@@ -1,21 +1,14 @@
 import json
 
-from os import path
-
 from polyIntersect import app
 
+# data
+from .sample_data import MAINE_GEOJSON
+from .sample_data import SELF_INTERSECTING_GEOJSON
+
+
+# test flask client
 app = app.test_client()
-
-
-fixtures = path.abspath(path.join(path.dirname(__file__), 'fixtures'))
-
-
-with open(path.join(fixtures, 'maine.geojson')) as f:
-    maine_geojson = "".join(f.read().split())
-
-
-with open(path.join(fixtures, 'self-intersecting.geojson')) as f:
-    self_intersecting_geojson = "".join(f.read().split())
 
 
 def test_hello():
@@ -25,12 +18,16 @@ def test_hello():
     assert result.content_type == 'application/json'
 
 
+def test_execute_graph():
+    url = '/api/v1/polyIntersect/executeGraph?'
+
+
 def test_poly_intersect_successful():
     url = '/api/v1/polyIntersect'
 
     payload = {}
-    payload['user_poly'] = maine_geojson
-    payload['intersect_polys'] = maine_geojson
+    payload['user_poly'] = MAINE_GEOJSON
+    payload['intersect_polys'] = MAINE_GEOJSON
 
     result = app.post(url, data=payload)
 
@@ -52,12 +49,13 @@ def test_poly_intersect_successful_with_self_intersecting_polygon():
     url = '/api/v1/polyIntersect'
 
     payload = {}
-    payload['user_poly'] = self_intersecting_geojson
-    payload['intersect_polys'] = self_intersecting_geojson
+    payload['user_poly'] = SELF_INTERSECTING_GEOJSON
+    payload['intersect_polys'] = SELF_INTERSECTING_GEOJSON
 
     result = app.post(url, data=payload)
     assert result.status_code == 200
     assert result.content_type == 'application/json'
+
     result_obj = json.loads(result.data)
     assert isinstance(result_obj, dict)
 
@@ -65,8 +63,8 @@ def test_poly_intersect_successful_with_self_intersecting_polygon():
 def test_geom_area():
     url = '/api/v1/polyIntersect/geom'
     payload = {}
-    payload['user_poly'] = maine_geojson
-    payload['intersect_polys'] = maine_geojson
+    payload['user_poly'] = MAINE_GEOJSON
+    payload['intersect_polys'] = MAINE_GEOJSON
 
     result = app.post(url, data=payload)
     assert result.status_code == 200
