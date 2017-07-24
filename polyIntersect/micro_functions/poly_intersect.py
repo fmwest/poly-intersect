@@ -1,34 +1,48 @@
 import polyIntersect.micro_functions.utils as u
 
-from dask.multiprocessing import get
-from osgeo import ogr
-import geojson as gj
-from geomet import wkt as WKT
+import json
+import itertools
+import rtree
+
+from shapely.geometry import shape, mapping
+from shapely.ops import unary_union
+
 
 __all__ = ['json2ogr', 'ogr2json', 'dissolve', 'intersect', 'buffer_to_dist',
            'get_area_overlap']
 
 
-def json2ogr(json):
+def json2ogr(in_json):
     '''
     Convert geojson object to GDAL geometry
     '''
-    geoms = ogr.Geometry(ogr.wkbMultiPolygon)
-    for feature in gj.loads(json)['features']:
-        geom = ogr.CreateGeometryFromWkt(WKT.dumps(feature['geometry']))
-        geoms.AddGeometry(geom)
-    geoms_prj = u.project(geoms, geoms.Centroid(), 'to-custom')
-    return geoms_prj
+
+    if isinstance(in_json, str):
+        in_json = json.loads(in_json)
+
+    if not isinstance(in_json, dict):
+        raise ValueError('input json must be dictionary')
+
+    if 'features' not in in_json.keys():
+        raise ValueError('input json must contain features property')
+
+    for f in in_json['features']:
+        f['geometry'] = shape(f['geometry'])
+
+    return in_json
 
 
-def ogr2json(geom):
+def ogr2json(featureset):
     '''
     Convert GDAL geometry to geojson object
     '''
-    return geom.ExportToJson()
+    for f in featureset['features']:
+        f['geometry'] = mapping(f['geometry'])
+
+    return featureset
 
 
-def dissolve(geom, field=None):
+def dissolve(featureset, field=None):
     '''
     Dissolve a set of geometries on a field, or dissolve fully to a single
     feature if no field is provided
@@ -38,14 +52,60 @@ def dissolve(geom, field=None):
     dissolve would need to implement something with Fiona/shapely/geopandas
     ^ add groupby functionality - group on either int or string
     '''
-    return geom.UnionCascaded()
+
+    if field:
+        sort_func = lambda k: k['properties'][field]
+    else:
+        sort_func = None
+
+    new_features = []
+
+    if sort_func:
+        features = sorted(featureset['features'], key=sort_func)
+        for key, group in itertools.groupby(features, key=sort_func):
+            properties, geom = zip(*[(f['properties'],
+                                      f['geometry']) for f in group])
+            new_features.append({'geometry': unary_union(geom),
+                                 'properties': properties[0]})
+
+    else:
+        geom = [f['geometry'] for f in featureset['features']]
+        properties = {}  # TODO: decide which attributes should go in here
+        new_features.append({'geometry': unary_union(geom),
+                             'properties': properties})
+
+    return dict(features=new_features)
 
 
-def intersect(geom1, geom2):
+def index_featureset(featureset):
     '''
-    Intersect two geometries
     '''
-    return geom1.Intersection(geom2)
+    index = rtree.index.Index()
+    for i, f in enumerate(featureset['features']):
+        geom = f['geometry']
+        index.insert(i, geom.bounds)
+    return index
+
+
+def intersect(featureset1, featureset2):
+    '''
+    '''
+    index = index_featureset(featureset2)
+
+    new_features = []
+
+    for f in featureset1['features']:
+        geom1 = f['geometry']
+        for fid in list(index.intersection(geom1.bounds)):
+            feat2 = featureset2['features'][fid]
+            geom2 = feat2['geometry']
+            if geom1.intersects(geom2):  # TODO: optmize to on intersect call?
+                new_geom = geom1.intersection(geom2)
+                new_feat = dict(properties=feat2['properties'],
+                                geometry=new_geom)
+                new_features.append(new_feat)
+
+    return dict(features=new_features)
 
 
 def buffer_to_dist(geom, distance):
@@ -57,9 +117,9 @@ def buffer_to_dist(geom, distance):
 
 def get_area_overlap(geom, geom_intersect, groupby=None):
     '''
-    Calculate the area of a geometry and the percent overlap with an
-    intersection of that geometry. Can calculate areas by category using
-    a groupby field
+    Calculate the area of a geometry and the percent overlap
+    with an intersection
+    of that geometry. Can calculate areas by category using a groupby field
     ^ add groupby functionality, convert math to numpy
     '''
     total_area = u.calculate_area(geom)
@@ -73,21 +133,6 @@ def is_valid(analysis_method):
     Validate that method exists
     '''
     return analysis_method in __all__
-
-
-# example dask input for reference:
-# graph = {'convert_aoi': (json2ogr, user_json),
-#          'convert_intersect': (json2ogr, intersect_json),
-#          'dissolve_aoi': (dissolve, 'convert_aoi'),
-#          'buffer_aoi': (buffer_to_dist, 'dissolve_aoi', user_dist),
-#          'intersect_aoi': (intersect, 'buffer_aoi', 'convert_intersect'),
-#          'area_overlap': (get_area_overlap, 'convert_aoi', 'intersect_aoi'),
-#          'convert_result': (ogr2json, 'intersect_aoi')}
-
-def process_graph(graph):
-    for func in graph.keys():
-        assert is_valid(func)
-    get(graph, graph.keys())
 
 
 def intersect_area_geom(user_json, intersect_polys_json,
