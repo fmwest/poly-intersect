@@ -157,17 +157,25 @@ def buffer_to_dist(featureset, distance):
     return dict(features=new_features)
 
 
-def get_overlap_statistics(geom, geom_intersect, groupby=None):
+def get_overlap_statistics(featureset, featureset_intersected, field=None):
     '''
     Calculate the area of a geometry and the percent overlap
     with an intersection of that geometry. Can calculate areas by
     category using a groupby field
     ^ add groupby functionality, convert math to numpy
     '''
-    total_area = u.calculate_area(geom)
-    intersection_area = u.calculate_area(geom_intersect)
-    pct_overlap = 100.0 * intersection_area / total_area
-    return (total_area, pct_overlap)
+    new_features = []
+    aoi_area = np.sum([f['geometry'].area for f in featureset['features']])
+
+    for f in featureset_intersected['features']:
+        geom = f['geometry']
+        new_feat = dict(properties=f['properties'],
+                        geometry=Polygon(geom))
+        new_feat['properties']['percent_overlap'] = 100 * geom.area / aoi_area
+        new_feat['properties']['aoi_area'] = aoi_area
+        new_features.append(new_feat)
+    
+    return dict(features=new_features)
 
 
 def is_valid(analysis_method):
