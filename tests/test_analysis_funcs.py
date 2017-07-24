@@ -4,7 +4,7 @@ from polyIntersect.micro_functions.poly_intersect import json2ogr
 from polyIntersect.micro_functions.poly_intersect import dissolve
 from polyIntersect.micro_functions.poly_intersect import intersect
 
-from sample_data import DISSOLVE_ME
+from .sample_data import DISSOLVE_ME
 
 fixtures = path.abspath(path.join(path.dirname(__file__), 'fixtures'))
 
