@@ -12,7 +12,8 @@ from shapely.ops import unary_union, transform
 
 
 __all__ = ['json2ogr', 'ogr2json', 'dissolve', 'intersect', 'buffer_to_dist',
-           'get_overlap_statistics']
+           'get_aoi_area', 'get_intersect_area', 'get_intersect_area_percent',
+           'get_intersect_count']
 
 
 def json2ogr(in_json):
@@ -169,34 +170,78 @@ def buffer_to_dist(featureset, distance):
     return new_featureset
 
 
-def get_overlap_statistics(featureset, intersection, field=None):
+# ------------------------- Calculation Functions --------------------------
+
+def get_aoi_area(featureset):
+    if len(featureset['features']) > 1:
+        raise ValueError('AOI must be dissolved to a single feature')
+    return np.sum([f['geometry'].area for f in featureset['features']])
+
+
+def validate_featureset(featureset, field=None):
     '''
-    Calculate the area of a geometry and the percent overlap with an
-    intersection of that geometry. Can calculate areas by category using a
-    groupby field.
+    '''
+    if field:
+        field_vals = [f['properties'][field] for f in featureset['features']]
+        if not len(field_vals) == len(set(field_vals)):
+            raise ValueError('Intersected area must be dissolved to a single \
+                              feature per unique value in the category field')
+    else:
+        if len(featureset['features']) > 1:
+            raise ValueError('Intersected area must be dissolved to a single \
+                              feature if no category field is specified')
+
+
+def get_intersect_area(featureset, intersection, field=None):
+    '''
+    Calculate the area overlap of an intersection with the user AOI. Can
+    calculate areas by category using a groupby field.
 
     If calculating areas by category, there must be one feature per unique
     value in the category field. If not, there must be one feature total in
     the intersected featureset
     '''
-    aoi_area = np.sum([f['geometry'].area for f in featureset['features']])
+    validate_featureset(intersection, field)
 
     if field:
-        field_vals = [f['properties'][field] for f in intersection['features']]
-        if not len(field_vals) == len(set(field_vals)):
-            raise ValueError('Intersected area must be dissolved to a single \
-                              feature per unique value in the category field')
+        area_overlap = {f['properties'][field]: f['geometry'].area
+                        for f in intersection['features']}
+    else:
+        f = intersection['features'][0]
+        area_overlap = f['geometry'].area
+
+    return area_overlap
+
+
+def get_intersect_area_percent(featureset, intersection, field=None):
+    '''
+    Calculate the area overlap of an intersection with the user AOI. Can
+    calculate areas by category using a groupby field.
+
+    If calculating areas by category, there must be one feature per unique
+    value in the category field. If not, there must be one feature total in
+    the intersected featureset
+    '''
+    validate_featureset(intersection, field)
+    aoi_area = get_aoi_area(featureset)
+
+    if field:
         pct_overlap = {f['properties'][field]:
                        f['geometry'].area * 100.0 / aoi_area
                        for f in intersection['features']}
     else:
-        if len(intersection['features']) > 1:
-            raise ValueError('Intersected area must be dissolved to a single \
-                              feature if no category field is specified')
         f = intersection['features'][0]
         pct_overlap = f['geometry'].area * 100.0 / aoi_area
 
     return pct_overlap
+
+
+def get_intersect_count(intersection, field):
+    '''
+    Summarize numerical attribute from features of an intersection with the
+    user AOI
+    '''
+    return np.sum([f['properties'][field] for f in intersection])
 
 
 def is_valid(analysis_method):
@@ -206,54 +251,58 @@ def is_valid(analysis_method):
     return analysis_method in __all__
 
 
-def intersect_area_geom(user_json, intersect_polys_json,
+# ---------------------------- Previous Version ----------------------------
+
+def intersect_area_geom(user_json, intersect_json,
                         return_intersect_geom=False):
     try:
         # VALIDATE INPUT JSON FILES AND CONTAIN ONLY POLYGONS OR MULTIPOLYGONS
         u.verify_polygons(user_json)
         u.verify_polygons(intersect_json)
-        
-        #####===== DEFINE THE RESULT OBJECT =====#####
+
+        # ===== DEFINE THE RESULT OBJECT ===== #
         result = {}
 
-        #####===== CONVERT INPUT JSON TO OGR POLYGONS =====#####
-        user_ogr      = u.json_polys_to_ogr(user_json) 
+        # ===== CONVERT INPUT JSON TO OGR POLYGONS ===== #
+        user_ogr = u.json_polys_to_ogr(user_json)
         intersect_ogr = u.json_polys_to_ogr(intersect_json)
 
-        #####===== DISSOLVE USER POLYS AND CREATE 10KM AND 50KM BUFFERS =====#####
-        user_dissolve  = u.dissolve_ogr_to_single_feature(user_ogr)
+        # ===== DISSOLVE USER POLYS AND CREATE 10KM AND 50KM BUFFERS ===== #
+        user_dissolve = u.dissolve_ogr_to_single_feature(user_ogr)
         buff_10km = u.buffer_ogr_polygons(user_dissolve.Clone(), 10000)
         buff_50km = u.buffer_ogr_polygons(user_dissolve.Clone(), 50000)
 
-        #####===== DISSOLVE INTERSECTION POLYGONS TO A SINGLE FEATURE =====#####
+        # ===== DISSOLVE INTERSECTION POLYGONS TO A SINGLE FEATURE ===== #
         intersect_polygons = u.dissolve_ogr_to_single_feature(intersect_ogr)
 
-        #####===== CALCULATE INTERSECTIONS OF USER POLYGONS AND BUFFERS WITH INTERSECT POLYGONS =====#####
+        # ===== CALCULATE INTERSECTIONS WITH INTERSECT POLYGONS ===== #
         intersection_user = user_dissolve.Intersection(intersect_polygons)
         intersection_10km = buff_10km.Intersection(intersect_polygons)
         intersection_50km = buff_50km.Intersection(intersect_polygons)
 
-        #####===== IF RETURN INTERSECT GEOMETRY IS TRUE, POPULATE RESULTS WITH INTERSECT GEOMETRY =====#####
-        #####===== THIS IS DONE HERE BECAUSE THE u.calculate_dissolved_area FUNCTION MODIFIES THE GEOMETRY OBJECTS =====#####
+        # ===== IF RETURN INTERSECT GEOMETRY IS TRUE, POPULATE RESULTS WITH
+        # INTERSECT GEOMETRY ===== #
+        # ===== THIS IS DONE HERE BECAUSE THE u.calculate_dissolved_area
+        # FUNCTION MODIFIES THE GEOMETRY OBJECTS ===== #
         if return_intersect_geom:
             result['intersect_geom_user'] = intersection_user.ExportToJson()
             result['intersect_geom_10km'] = intersection_10km.ExportToJson()
             result['intersect_geom_50km'] = intersection_50km.ExportToJson()
 
-        #####===== CALCULATE AREA OF USER POLYS AND BUFFERS =====#####    
+        # ===== CALCULATE AREA OF USER POLYS AND BUFFERS ===== #
         user_area_ha = u.calculate_dissolved_area(user_dissolve)
         buff_10km_ha = u.calculate_dissolved_area(buff_10km)
         buff_50km_ha = u.calculate_dissolved_area(buff_50km)
 
-        #####===== CALCULATE AREA OF INTERSECTIONS =====#####
-        user_area_intersection_ha = u.calculate_dissolved_area(intersection_user)
-        buff_10km_intersection_ha = u.calculate_dissolved_area(intersection_10km)
-        buff_50km_intersection_ha = u.calculate_dissolved_area(intersection_50km)
+        # ===== CALCULATE AREA OF INTERSECTIONS ===== #
+        user_area_int_ha = u.calculate_dissolved_area(intersection_user)
+        buff_10km_int_ha = u.calculate_dissolved_area(intersection_10km)
+        buff_50km_int_ha = u.calculate_dissolved_area(intersection_50km)
 
-        #####===== CALCULATE % OVERLAP =====#####
-        pct_overlap_user = user_area_intersection_ha / user_area_ha * 100
-        pct_overlap_10km = buff_10km_intersection_ha / buff_10km_ha * 100
-        pct_overlap_50km = buff_50km_intersection_ha / buff_50km_ha * 100
+        # ===== CALCULATE % OVERLAP ===== #
+        pct_overlap_user = user_area_int_ha / user_area_ha * 100
+        pct_overlap_10km = buff_10km_int_ha / buff_10km_ha * 100
+        pct_overlap_50km = buff_50km_int_ha / buff_50km_ha * 100
 
         # DEFINE THE RESULT OBJECT
         result = {}
@@ -264,7 +313,7 @@ def intersect_area_geom(user_json, intersect_polys_json,
         buffs_50km = u.buffer_and_dissolve_to_single_feature(user_json, 50000)
 
         # DISSOLVE INTERSECTION POLYGONS TO A SINGLE FEATURE
-        intersect_polys = u.dissolve_to_single_feature(intersect_polys_json)
+        intersect_polys = u.dissolve_to_single_feature(intersect_json)
 
         # CALCULATE INTERSECTIONS OF USER POLYGONS AND BUFFERS WITH POLYGONS
         intersection_user = user_polys.Intersection(intersect_polys)
@@ -285,17 +334,17 @@ def intersect_area_geom(user_json, intersect_polys_json,
         buff_10km_ha = u.calculate_area(buffs_10km)
         buff_50km_ha = u.calculate_area(buffs_50km)
 
-        #   CALCULATE AREA OF INTERSECTIONS =====#####
-        user_area_intersection_ha = u.calculate_area(intersection_user)
-        buff_10km_intersection_ha = u.calculate_area(intersection_10km)
-        buff_50km_intersection_ha = u.calculate_area(intersection_50km)
+        #   CALCULATE AREA OF INTERSECTIONS ===== #
+        user_area_int_ha = u.calculate_area(intersection_user)
+        buff_10km_int_ha = u.calculate_area(intersection_10km)
+        buff_50km_int_ha = u.calculate_area(intersection_50km)
 
-        #   CALCULATE % OVERLAP =====#####
-        pct_overlap_user = user_area_intersection_ha / user_area_ha * 100
-        pct_overlap_10km = buff_10km_intersection_ha / buff_10km_ha * 100
-        pct_overlap_50km = buff_50km_intersection_ha / buff_50km_ha * 100
+        #   CALCULATE % OVERLAP ===== #
+        pct_overlap_user = user_area_int_ha / user_area_ha * 100
+        pct_overlap_10km = buff_10km_int_ha / buff_10km_ha * 100
+        pct_overlap_50km = buff_50km_int_ha / buff_50km_ha * 100
 
-        #   POPULATE RESULTS WITH AREAS =====#####
+        #   POPULATE RESULTS WITH AREAS ===== #
         result['areaHa_user'] = user_area_ha
         result['areaHa_10km'] = buff_10km_ha
         result['areaHa_50km'] = buff_50km_ha
@@ -307,3 +356,94 @@ def intersect_area_geom(user_json, intersect_polys_json,
     except:
         raise
 
+
+def intersect_area_geom_from_endpoint(user_json, arcgis_server_layer,
+                                      return_intersect_geom, buff,
+                                      fields='*'):
+    try:
+        # ===== VERIFY THAT INPUT JSON FILES ARE VALID,
+        # AND CONTAIN ONLY POLYGONS OR MULTIPOLYGONS ===== #
+        u.verify_polygons(user_json)
+
+        # ===== DEFINE THE RESULT OBJECT ===== #
+        result = {}
+
+        # ===== CONVERT INPUT JSON TO OGR POLYGONS ===== #
+        user_ogr = u.json_polys_to_ogr(user_json)
+
+        # ===== DISSOLVE USER POLYS AND CREATE 10KM AND 50KM BUFFERS ===== #
+        user_dissolve = u.dissolve_ogr_to_single_feature(user_ogr)
+        if buff:
+            buff_10km = u.buffer_ogr_polygons(user_dissolve.Clone(), 10000)
+            buff_50km = u.buffer_ogr_polygons(user_dissolve.Clone(), 50000)
+
+        # ===== GET INTERSECT GEOMETRY FROM ARC ENDPOINT ===== #
+        if buff:
+            intersect_polys_json = \
+                u.get_intersect_geom_from_endpoint(buff_50km,
+                                                   arcgis_server_layer,
+                                                   fields)
+        else:
+            intersect_polys_json = \
+                u.get_intersect_geom_from_endpoint(user_dissolve,
+                                                   arcgis_server_layer,
+                                                   fields)
+        u.verify_polygons(intersect_polys_json)
+        # ===== CONVERT INTERSECT GEOMETRY TO OGR POLYGONS ===== #
+        intersect_ogr = u.json_polys_to_ogr(intersect_polys_json)
+
+        # ===== DISSOLVE INTERSECTION POLYGONS TO A SINGLE FEATURE ===== #
+        intersect_polygons = u.dissolve_ogr_to_single_feature(intersect_ogr)
+
+        # ===== CALCULATE INTERSECTIONS OF USER POLYGONS AND BUFFERS WITH
+        # INTERSECT POLYGONS ===== #
+        intersection_user = user_dissolve.Intersection(intersect_polygons)
+        if buff:
+            intersection_10km = buff_10km.Intersection(intersect_polygons)
+            intersection_50km = buff_50km.Intersection(intersect_polygons)
+
+        # ===== IF RETURN INTERSECT GEOMETRY IS TRUE, POPULATE RESULTS WITH
+        # INTERSECT GEOMETRY ===== #
+        # ===== THIS IS DONE HERE BECAUSE THE u.calculate_dissolved_area
+        # FUNCTION MODIFIES THE GEOMETRY OBJECTS ===== #
+        if return_intersect_geom:
+            result['intersect_geom_user'] = intersection_user.ExportToJson()
+            if buff:
+                result['intersect_geom_10km'] = \
+                    intersection_10km.ExportToJson()
+                result['intersect_geom_50km'] = \
+                    intersection_50km.ExportToJson()
+
+        # ===== CALCULATE AREA OF USER POLYS AND BUFFERS ===== #
+        user_area_ha = u.calculate_dissolved_area(user_dissolve)
+        if buff:
+            buff_10km_ha = u.calculate_dissolved_area(buff_10km)
+            buff_50km_ha = u.calculate_dissolved_area(buff_50km)
+
+        # ===== CALCULATE AREA OF INTERSECTIONS ===== #
+        user_area_intersection_ha = \
+            u.calculate_dissolved_area(intersection_user)
+        if buff:
+            buff_10km_intersection_ha = \
+                u.calculate_dissolved_area(intersection_10km)
+            buff_50km_intersection_ha = \
+                u.calculate_dissolved_area(intersection_50km)
+
+        # ===== CALCULATE % OVERLAP ===== #
+        pct_overlap_user = user_area_intersection_ha / user_area_ha * 100
+        if buff:
+            pct_overlap_10km = buff_10km_intersection_ha / buff_10km_ha * 100
+            pct_overlap_50km = buff_50km_intersection_ha / buff_50km_ha * 100
+
+        # ===== POPULATE RESULTS WITH AREAS ===== #
+        result['areaHa_user'] = user_area_ha
+        result['pct_overlap_user'] = pct_overlap_user
+        if buff:
+            result['areaHa_10km'] = buff_10km_ha
+            result['areaHa_50km'] = buff_50km_ha
+            result['pct_overlap_10km'] = pct_overlap_10km
+            result['pct_overlap_50km'] = pct_overlap_50km
+
+        return str(result)
+    except:
+        raise
