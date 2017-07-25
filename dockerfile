@@ -26,7 +26,7 @@ RUN groupadd $USER && useradd -g $USER $USER -s /bin/bash
 
 RUN conda update conda
 RUN conda config --add channels conda-forge 
-RUN conda install virtualenv gunicorn gevent numpy gdal geojson
+RUN conda install virtualenv gunicorn gevent numpy gdal geojson urllib3
 
 RUN mkdir -p /opt/$NAME
 RUN cd /opt/$NAME && virtualenv venv && /bin/bash -c "source venv/bin/activate"
