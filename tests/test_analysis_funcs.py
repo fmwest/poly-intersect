@@ -8,7 +8,9 @@ from polyIntersect.micro_functions.poly_intersect import intersect
 from polyIntersect.micro_functions.poly_intersect import index_featureset
 from polyIntersect.micro_functions.poly_intersect import buffer_to_dist
 from polyIntersect.micro_functions.poly_intersect import project_local
-from polyIntersect.micro_functions.poly_intersect import get_overlap_statistics
+from polyIntersect.micro_functions.poly_intersect import get_intersect_area
+from polyIntersect.micro_functions.poly_intersect import get_intersect_area_percent
+from polyIntersect.micro_functions.poly_intersect import get_intersect_count
 
 
 from shapely.geometry.polygon import Polygon
@@ -130,7 +132,7 @@ def test_not_projected_buffer():
                           Azimuthal Equidistant coordinate system'
 
 
-def test_overlap_stats_no_categories():
+def test_area_percent_no_categories():
     featureset1 = json2ogr(INTERSECT_PARTIALLY_WITHIN_GEOJSON)
     featureset2 = json2ogr(INTERSECT_BASE_GEOJSON)
 
@@ -142,7 +144,7 @@ def test_overlap_stats_no_categories():
     assert pct_overlap > 0 and pct_overlap <= 100
 
 
-def test_overlap_stats_with_categories():
+def test_area_percent_with_categories():
     featureset1 = json2ogr(INTERSECT_BASE_GEOJSON)
     featureset2 = json2ogr(INTERSECT_MULTIPLE_FEATURES)
 
@@ -151,15 +153,32 @@ def test_overlap_stats_with_categories():
     field_vals = [f['properties']['id'] for f in intersection['features']]
     assert len(field_vals) == len(set(field_vals))
 
-    pct_overlap = get_overlap_statistics(featureset1, intersection,
-                                         field='id')
+    pct_overlap = get_intersect_area_percent(featureset1, intersection,
+                                             field='id')
     assert isinstance(pct_overlap, dict)
     assert len(pct_overlap.keys()) == 2
     for val in pct_overlap.keys():
         assert pct_overlap[val] > 0 and pct_overlap[val] <= 100
 
 
-def test_overlap_stats_no_categories_fail():
+def test_area_stats_with_categories():
+    featureset1 = json2ogr(INTERSECT_BASE_GEOJSON)
+    featureset2 = json2ogr(INTERSECT_MULTIPLE_FEATURES)
+
+    intersection = intersect(featureset1, featureset2)
+    assert len(intersection['features']) == 2
+    field_vals = [f['properties']['id'] for f in intersection['features']]
+    assert len(field_vals) == len(set(field_vals))
+
+    pct_overlap = get_intersect_area_percent(featureset1, intersection,
+                                             field='id')
+    assert isinstance(pct_overlap, dict)
+    assert len(pct_overlap.keys()) == 2
+    for val in pct_overlap.keys():
+        assert pct_overlap[val] > 0 and pct_overlap[val] <= 100
+
+
+def test_area_percent_no_categories_fail():
     featureset1 = json2ogr(INTERSECT_BASE_GEOJSON)
     featureset2 = json2ogr(INTERSECT_MULTIPLE_FEATURES)
 
@@ -169,7 +188,8 @@ def test_overlap_stats_no_categories_fail():
     assert len(field_vals) == len(set(field_vals))
 
     try:
-        pct_overlap = get_overlap_statistics(featureset1, intersection, field='id')
+        pct_overlap = get_intersect_area_percent(featureset1, intersection,
+                                                 field='id')
     except ValueError as e:
         assert str(e) == 'Intersected area must be dissolved to a single \
                               feature if no category field is specified'

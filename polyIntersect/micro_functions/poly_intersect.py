@@ -12,7 +12,8 @@ from shapely.ops import unary_union, transform
 
 
 __all__ = ['json2ogr', 'ogr2json', 'dissolve', 'intersect', 'buffer_to_dist',
-           'get_overlap_statistics']
+           'get_aoi_area', 'get_intersect_area', 'get_intersect_area_percent', 
+           'get_intersect_count']
 
 
 def json2ogr(in_json):
@@ -169,34 +170,79 @@ def buffer_to_dist(featureset, distance):
     return new_featureset
 
 
-def get_overlap_statistics(featureset, intersection, field=None):
+##------------------------- Calculation Functions -------------------------##
+
+def get_aoi_area(featureset):
+    if len(featureset['features']) > 1:
+        raise ValueError('AOI must be dissolved to a single feature')
+    return np.sum([f['geometry'].area for f in featureset['features']])
+
+
+def validate_featureset(featureset, field=None):
     '''
-    Calculate the area of a geometry and the percent overlap with an
-    intersection of that geometry. Can calculate areas by category using a
-    groupby field.
+    '''
+    if field:
+        if not field in
+        field_vals = [f['properties'][field] for f in featureset['features']]
+        if not len(field_vals) == len(set(field_vals)):
+            raise ValueError('Intersected area must be dissolved to a single \
+                              feature per unique value in the category field')
+    else:
+        if len(featureset['features']) > 1:
+            raise ValueError('Intersected area must be dissolved to a single \
+                              feature if no category field is specified')
+
+
+def get_intersect_area(featureset, intersection, field=None):
+    '''
+    Calculate the area overlap of an intersection with the user AOI. Can
+    calculate areas by category using a groupby field.
 
     If calculating areas by category, there must be one feature per unique
     value in the category field. If not, there must be one feature total in
     the intersected featureset
     '''
-    aoi_area = np.sum([f['geometry'].area for f in featureset['features']])
+    validate_featureset(intersection)
 
     if field:
-        field_vals = [f['properties'][field] for f in intersection['features']]
-        if not len(field_vals) == len(set(field_vals)):
-            raise ValueError('Intersected area must be dissolved to a single \
-                              feature per unique value in the category field')
+        area_overlap = {f['properties'][field]:f['geometry'].area
+                        for f in intersection['features']}
+    else:
+        f = intersection['features'][0]
+        area_overlap = f['geometry'].area
+
+    return area_overlap
+
+
+def get_intersect_area_percent(featureset, intersection, field=None):
+    '''
+    Calculate the area overlap of an intersection with the user AOI. Can
+    calculate areas by category using a groupby field.
+
+    If calculating areas by category, there must be one feature per unique
+    value in the category field. If not, there must be one feature total in
+    the intersected featureset
+    '''
+    validate_featureset(intersection)
+    aoi_area = get_aoi_area(featureset)
+
+    if field:
         pct_overlap = {f['properties'][field]:
                        f['geometry'].area * 100.0 / aoi_area
                        for f in intersection['features']}
     else:
-        if len(intersection['features']) > 1:
-            raise ValueError('Intersected area must be dissolved to a single \
-                              feature if no category field is specified')
         f = intersection['features'][0]
         pct_overlap = f['geometry'].area * 100.0 / aoi_area
 
     return pct_overlap
+
+
+def get_intersect_count(intersection, field):
+    '''
+    Summarize numerical attribute from features of an intersection with the
+    user AOI
+    '''
+    return np.sum([f['properties'][field] for f in intersection])
 
 
 def is_valid(analysis_method):
@@ -205,6 +251,8 @@ def is_valid(analysis_method):
     '''
     return analysis_method in __all__
 
+
+##---------------------------- Previous Version ---------------------------##
 
 def intersect_area_geom(user_json, intersect_polys_json,
                         return_intersect_geom=False):
