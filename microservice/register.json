@@ -19,12 +19,12 @@
 		}
 	},
 	{
-		"path": "/v1/polyIntersect/geom",
+		"path": "/v1/polyIntersect/endpoint",
 		"method": "POST",
 		"binary": true,
 		"redirect": {
 			"method": "POST",
-			"path": "/api/v1/polyIntersect/geom"
+			"path": "/api/v1/polyIntersect/endpoint"
 		}
 	}]
 }
