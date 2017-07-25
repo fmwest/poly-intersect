@@ -6,6 +6,7 @@ import rtree
 from functools import partial
 import pyproj
 from copy import deepcopy
+import numpy as np
 
 from shapely.geometry import Polygon, shape, mapping
 from shapely.ops import unary_union, transform
@@ -72,7 +73,10 @@ def dissolve(featureset, field=None):
         new_features.append({'geometry': unary_union(geom),
                              'properties': properties})
 
-    return dict(features=new_features)
+    new_featureset = dict(type=featureset['type'],
+                          features=new_features)
+    if 'crs' in featureset.keys(): new_featureset['crs'] = featureset['crs']
+    return new_featureset
 
 
 def index_featureset(featureset):
@@ -103,7 +107,10 @@ def intersect(featureset1, featureset2):
                                 geometry=new_geom)
                 new_features.append(new_feat)
 
-    return dict(features=new_features)
+    new_featureset = dict(type=featureset2['type'],
+                          features=new_features)
+    if 'crs' in featureset2.keys(): new_featureset['crs'] = featureset2['crs']
+    return new_featureset
 
 
 def project_local(featureset):
@@ -129,11 +136,11 @@ def project_local(featureset):
                         geometry=projected_geom)
         new_features.append(new_feat)
 
-    new_featureset = dict(features=new_features)
-    new_featureset['crs'] = dict(type='name', 
-                                 properties=dict(
-                                    name='urn:ogc:def:uom:EPSG::9102'))
-    return new_featureset
+    return dict(type=featureset['type'],
+                crs=dict(type='name', 
+                         properties=dict(
+                            name='urn:ogc:def:uom:EPSG::9102')),
+                features=new_features)
 
 
 def buffer_to_dist(featureset, distance):
@@ -154,28 +161,40 @@ def buffer_to_dist(featureset, distance):
                         geometry=buffered_geom)
         new_features.append(new_feat)
 
-    return dict(features=new_features)
+    new_featureset = dict(type=featureset['type'],
+                          features=new_features)
+    if 'crs' in featureset.keys(): new_featureset['crs'] = featureset['crs']
+    return new_featureset
 
 
-def get_overlap_statistics(featureset, featureset_intersected, field=None):
+def get_overlap_statistics(featureset, intersection, field=None):
     '''
-    Calculate the area of a geometry and the percent overlap
-    with an intersection of that geometry. Can calculate areas by
-    category using a groupby field
-    ^ add groupby functionality, convert math to numpy
+    Calculate the area of a geometry and the percent overlap with an
+    intersection of that geometry. Can calculate areas by category using a
+    groupby field.
+    
+    If calculating areas by category, there must be one feature per unique
+    value in the category field. If not, there must be one feature total in
+    the intersected featureset
     '''
-    new_features = []
     aoi_area = np.sum([f['geometry'].area for f in featureset['features']])
 
-    for f in featureset_intersected['features']:
-        geom = f['geometry']
-        new_feat = dict(properties=f['properties'],
-                        geometry=Polygon(geom))
-        new_feat['properties']['percent_overlap'] = 100 * geom.area / aoi_area
-        new_feat['properties']['aoi_area'] = aoi_area
-        new_features.append(new_feat)
-    
-    return dict(features=new_features)
+    if field:
+        field_vals = [f['properties'][field] for f in intersection['features']]
+        if not len(field_vals) == len(set(field_vals)):
+            raise ValueError('Intersected area must be dissolved to a single \
+                              feature per unique value in the category field')
+        pct_overlap = {f['properties'][field]:
+                       f['geometry'].area * 100.0 / aoi_area
+                       for f in intersection['features']}
+    else:
+        if len(intersection['features']) > 1:
+            raise ValueError('Intersected area must be dissolved to a single \
+                              feature if no category field is specified')
+        f = intersection['features'][0]
+        pct_overlap = f['geometry'].area * 100.0 / aoi_area
+
+    return pct_overlap
 
 
 def is_valid(analysis_method):
