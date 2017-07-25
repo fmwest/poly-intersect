@@ -139,7 +139,7 @@ def test_area_percent_no_categories():
     result_featureset = intersect(featureset1, featureset2)
     assert len(result_featureset['features']) == 1
 
-    pct_overlap = get_overlap_statistics(featureset1, result_featureset)
+    pct_overlap = get_intersect_area_percent(featureset1, result_featureset)
     assert isinstance(pct_overlap, float)
     assert pct_overlap > 0 and pct_overlap <= 100
 

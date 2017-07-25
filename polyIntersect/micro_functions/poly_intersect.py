@@ -182,7 +182,6 @@ def validate_featureset(featureset, field=None):
     '''
     '''
     if field:
-        if not field in
         field_vals = [f['properties'][field] for f in featureset['features']]
         if not len(field_vals) == len(set(field_vals)):
             raise ValueError('Intersected area must be dissolved to a single \
@@ -202,7 +201,7 @@ def get_intersect_area(featureset, intersection, field=None):
     value in the category field. If not, there must be one feature total in
     the intersected featureset
     '''
-    validate_featureset(intersection)
+    validate_featureset(intersection, field)
 
     if field:
         area_overlap = {f['properties'][field]:f['geometry'].area
@@ -223,7 +222,7 @@ def get_intersect_area_percent(featureset, intersection, field=None):
     value in the category field. If not, there must be one feature total in
     the intersected featureset
     '''
-    validate_featureset(intersection)
+    validate_featureset(intersection, field)
     aoi_area = get_aoi_area(featureset)
 
     if field:
