@@ -5,7 +5,6 @@ import itertools
 import rtree
 from functools import partial
 import pyproj
-from copy import deepcopy
 import numpy as np
 
 from shapely.geometry import Polygon, shape, mapping
@@ -53,7 +52,7 @@ def dissolve(featureset, field=None):
     '''
 
     if field:
-        sort_func = lambda k: k['properties'][field]
+        def sort_func(k): return k['properties'][field]
     else:
         sort_func = None
 
@@ -75,7 +74,8 @@ def dissolve(featureset, field=None):
 
     new_featureset = dict(type=featureset['type'],
                           features=new_features)
-    if 'crs' in featureset.keys(): new_featureset['crs'] = featureset['crs']
+    if 'crs' in featureset.keys():
+        new_featureset['crs'] = featureset['crs']
     return new_featureset
 
 
@@ -109,13 +109,14 @@ def intersect(featureset1, featureset2):
 
     new_featureset = dict(type=featureset2['type'],
                           features=new_features)
-    if 'crs' in featureset2.keys(): new_featureset['crs'] = featureset2['crs']
+    if 'crs' in featureset2.keys():
+        new_featureset['crs'] = featureset2['crs']
     return new_featureset
 
 
 def project_local(featureset):
     '''
-    Transform geometry with a local projection centered at the 
+    Transform geometry with a local projection centered at the
     shape's centroid
     '''
     if featureset['crs']['properties']['name'] == 'urn:ogc:def:uom:EPSG::9102':
@@ -137,7 +138,7 @@ def project_local(featureset):
         new_features.append(new_feat)
 
     return dict(type=featureset['type'],
-                crs=dict(type='name', 
+                crs=dict(type='name',
                          properties=dict(
                             name='urn:ogc:def:uom:EPSG::9102')),
                 features=new_features)
@@ -147,8 +148,8 @@ def buffer_to_dist(featureset, distance):
     '''
     Buffer a geometry with a given distance (assumed to be kilometers)
     '''
-    if not (featureset['crs']['properties']['name']
-             == 'urn:ogc:def:uom:EPSG::9102'):
+    if not (featureset['crs']['properties']['name'] ==
+            'urn:ogc:def:uom:EPSG::9102'):
         raise ValueError('geometries must be projected with the World \
                           Azimuthal Equidistant coordinate system')
 
@@ -163,7 +164,8 @@ def buffer_to_dist(featureset, distance):
 
     new_featureset = dict(type=featureset['type'],
                           features=new_features)
-    if 'crs' in featureset.keys(): new_featureset['crs'] = featureset['crs']
+    if 'crs' in featureset.keys():
+        new_featureset['crs'] = featureset['crs']
     return new_featureset
 
 
@@ -172,7 +174,7 @@ def get_overlap_statistics(featureset, intersection, field=None):
     Calculate the area of a geometry and the percent overlap with an
     intersection of that geometry. Can calculate areas by category using a
     groupby field.
-    
+
     If calculating areas by category, there must be one feature per unique
     value in the category field. If not, there must be one feature total in
     the intersected featureset
