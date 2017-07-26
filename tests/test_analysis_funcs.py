@@ -245,5 +245,6 @@ def test_esri_server2json():
     layer = 'country_data/south_america/MapServer/4'
     layer_url = path.join(host, 'arcgis/rest/services', layer)
 
-    ogr_featureset = esri_server2ogr(layer_url)
-    assert 'features' in ogr_featureset.keys()
+    featureset = esri_server2ogr(layer_url)
+    assert 'features' in featureset.keys()
+    assert isinstance(featureset['features'][0]['geometry'], (Polygon, MultiPolygon))
