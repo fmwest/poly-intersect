@@ -1,0 +1,30 @@
+language: python
+sudo: false
+python:
+    - "3.6"
+
+install:
+  # Install conda
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update conda
+
+  # Install dependencies
+  - conda env create -f environment-ubuntu.yml python=$TRAVIS_PYTHON_VERSION
+  - source activate gfw-api
+
+  # Dependencies for lint checking only
+  - conda install flake8
+  - conda install pytest
+
+  - python setup.py develop --no-deps
+
+script:
+    - flake8 polyIntersect
+    - py.test tests --verbose
+
+notifications:
+  email: false
+  slack: blueraster:ovUrQK7bHVKMilBj8fSc25qb
