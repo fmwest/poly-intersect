@@ -60,7 +60,6 @@ def esri_server2ogr(layer_endpoint, where='1=1',
     params['outFields'] = out_fields
     params['returnGeometry'] = return_geometry
     params['token'] = token
-    params['outSR'] = token
     params['f'] = 'geojson'
 
     req = requests.post(url, data=params)
