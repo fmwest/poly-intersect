@@ -106,6 +106,7 @@ dependencies:
   - geomet==0.1.2
   - gevent==1.2.2
   - greenlet==0.4.12
+  - gunicorn==19.7.1
   - idna==2.5
   - urllib3==1.21.1
 prefix: /home/fiona/miniconda2/envs/gfw-api
