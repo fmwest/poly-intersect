@@ -10,21 +10,12 @@
 		}
 	},
 	{
-		"path": "/v1/polyIntersect",
+		"path": "/v1/polyIntersect/brazil-biomes",
 		"method": "POST",
 		"binary": true,
 		"redirect": {
 			"method": "POST",
-			"path": "/api/v1/polyIntersect"
-		}
-	},
-	{
-		"path": "/v1/polyIntersect/endpoint",
-		"method": "POST",
-		"binary": true,
-		"redirect": {
-			"method": "POST",
-			"path": "/api/v1/polyIntersect/endpoint"
+			"path": "/api/v1/polyIntersect/brazil-biomes"
 		}
 	}]
 }
