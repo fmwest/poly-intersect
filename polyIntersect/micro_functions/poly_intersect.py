@@ -16,7 +16,7 @@ from shapely.ops import unary_union, transform
 
 __all__ = ['json2ogr', 'ogr2json', 'dissolve', 'intersect', 'buffer_to_dist',
            'get_aoi_area', 'get_intersect_area', 'get_intersect_area_percent',
-           'get_intersect_count', 'esri_server2json']
+           'get_intersect_count', 'esri_server2ogr']
 
 
 def json2ogr(in_json):
@@ -60,12 +60,14 @@ def esri_server2ogr(layer_endpoint, where='1=1',
     params['outFields'] = out_fields
     params['returnGeometry'] = return_geometry
     params['token'] = token
+    params['outSR'] = token
     params['f'] = 'geojson'
 
     req = requests.post(url, data=params)
     req.raise_for_status()
 
-    return json2ogr(req.json())
+    # TODO: remove extra json parse here....
+    return json2ogr(req.text)
 
 
 def cartodb2ogr(service_endpoint):
