@@ -43,3 +43,6 @@ with open(path.join(fixtures, 'intersect_fully_within.geojson')) as f:
 
 with open(path.join(fixtures, 'intersect_partially_within.geojson')) as f:
     INTERSECT_PARTIALLY_WITHIN_GEOJSON = "".join(f.read().split())
+
+with open(path.join(fixtures, 'intersect_multiple_features.geojson')) as f:
+	INTERSECT_MULTIPLE_FEATURES = "".join(f.read().split())
