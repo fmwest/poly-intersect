@@ -6,6 +6,15 @@ from urllib.request import urlretrieve
 fixtures = path.abspath(path.join(path.dirname(__file__), 'fixtures'))
 
 
+def get_indonesia():
+    fixt = path.join(fixtures, 'IDN_adm0.shp.geojson')
+    if not path.exists(fixt):
+        download_sample_data()
+
+    with open(fixt, 'rb') as f:
+        return "".join(f.read().split())
+
+
 def download_sample_data():
 
     big_files = ['IDN_adm0.shp.geojson.gz',
@@ -44,5 +53,8 @@ with open(path.join(fixtures, 'intersect_fully_within.geojson')) as f:
 with open(path.join(fixtures, 'intersect_partially_within.geojson')) as f:
     INTERSECT_PARTIALLY_WITHIN_GEOJSON = "".join(f.read().split())
 
+with open(path.join(fixtures, 'brasil_user_poly.geojson')) as f:
+    BRAZIL_USER_POLY = "".join(f.read().split())
+
 with open(path.join(fixtures, 'intersect_multiple_features.geojson')) as f:
-	INTERSECT_MULTIPLE_FEATURES = "".join(f.read().split())
+    INTERSECT_MULTIPLE_FEATURES = "".join(f.read().split())
