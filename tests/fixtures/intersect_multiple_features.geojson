@@ -4,7 +4,8 @@
     {
       "type": "Feature",
       "properties": {
-        "id": 2
+        "id": 2,
+        "value": 4.3
       },
       "geometry": {
         "type": "Polygon",
@@ -33,7 +34,8 @@
     {
       "type": "Feature",
       "properties": {
-        "id": 1
+        "id": 1,
+        "value": 1.8
       },
       "geometry": {
         "type": "Polygon",
