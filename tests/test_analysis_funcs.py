@@ -11,6 +11,7 @@ from polyIntersect.micro_functions.poly_intersect import project_local
 from polyIntersect.micro_functions.poly_intersect import get_intersect_area
 from polyIntersect.micro_functions.poly_intersect import get_intersect_area_percent
 from polyIntersect.micro_functions.poly_intersect import get_intersect_count
+from polyIntersect.micro_functions.poly_intersect import get_intersect_z_scores
 
 
 from shapely.geometry.polygon import Polygon
@@ -204,6 +205,19 @@ def test_count():
 
     count = get_intersect_count(intersection, 'id')
     assert count == 3
+
+
+def test_z_scores():
+    featureset1 = json2ogr(INTERSECT_BASE_GEOJSON)
+    featureset2 = json2ogr(INTERSECT_MULTIPLE_FEATURES)
+
+    intersection = intersect(featureset1, featureset2)
+    assert len(intersection['features']) == 2
+
+    scores = get_intersect_z_scores(intersection, 'id', 'value')
+    assert len(scores) == 2
+    assert 1 in scores.keys() and 2 in scores.keys()
+    assert isinstance(scores[1], float)
 
 
 def test_json2ogr():

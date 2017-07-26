@@ -6,6 +6,7 @@ import rtree
 from functools import partial
 import pyproj
 import numpy as np
+from scipy import stats
 
 from shapely.geometry import Polygon, shape, mapping
 from shapely.ops import unary_union, transform
@@ -192,7 +193,7 @@ def validate_featureset(featureset, field=None):
                               feature if no category field is specified')
 
 
-def get_intersect_area(featureset, intersection, field=None):
+def get_intersect_area(featureset, intersection, category=None):
     '''
     Calculate the area overlap of an intersection with the user AOI. Can
     calculate areas by category using a groupby field.
@@ -201,10 +202,10 @@ def get_intersect_area(featureset, intersection, field=None):
     value in the category field. If not, there must be one feature total in
     the intersected featureset
     '''
-    validate_featureset(intersection, field)
+    validate_featureset(intersection, category)
 
-    if field:
-        area_overlap = {f['properties'][field]: f['geometry'].area
+    if category:
+        area_overlap = {f['properties'][category]: f['geometry'].area
                         for f in intersection['features']}
     else:
         f = intersection['features'][0]
@@ -213,7 +214,7 @@ def get_intersect_area(featureset, intersection, field=None):
     return area_overlap
 
 
-def get_intersect_area_percent(featureset, intersection, field=None):
+def get_intersect_area_percent(featureset, intersection, category=None):
     '''
     Calculate the area overlap of an intersection with the user AOI. Can
     calculate areas by category using a groupby field.
@@ -222,11 +223,11 @@ def get_intersect_area_percent(featureset, intersection, field=None):
     value in the category field. If not, there must be one feature total in
     the intersected featureset
     '''
-    validate_featureset(intersection, field)
+    validate_featureset(intersection, category)
     aoi_area = get_aoi_area(featureset)
 
-    if field:
-        pct_overlap = {f['properties'][field]:
+    if category:
+        pct_overlap = {f['properties'][category]:
                        f['geometry'].area * 100.0 / aoi_area
                        for f in intersection['features']}
     else:
@@ -238,10 +239,22 @@ def get_intersect_area_percent(featureset, intersection, field=None):
 
 def get_intersect_count(intersection, field):
     '''
-    Summarize numerical attribute from features of an intersection with the
+    Count numerical attribute from features of an intersection with the
     user AOI
     '''
     return np.sum([f['properties'][field] for f in intersection['features']])
+
+
+def get_intersect_z_scores(intersection, category, field):
+    '''
+    Get z score of numerical attribute from features of an intersection with
+    the user AOI
+    '''
+    validate_featureset(intersection, category)
+    scores = stats.zscore([f['properties'][field]
+                           for f in intersection['features']])
+    return {f['properties'][category]: scores[i]
+            for i, f in enumerate(intersection['features'])}
 
 
 def is_valid(analysis_method):
