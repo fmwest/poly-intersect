@@ -241,7 +241,7 @@ def get_intersect_count(intersection, field):
     Summarize numerical attribute from features of an intersection with the
     user AOI
     '''
-    return np.sum([f['properties'][field] for f in intersection])
+    return np.sum([f['properties'][field] for f in intersection['features']])
 
 
 def is_valid(analysis_method):

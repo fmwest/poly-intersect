@@ -195,6 +195,17 @@ def test_area_percent_no_categories_fail():
                               feature if no category field is specified'
 
 
+def test_count():
+    featureset1 = json2ogr(INTERSECT_BASE_GEOJSON)
+    featureset2 = json2ogr(INTERSECT_MULTIPLE_FEATURES)
+
+    intersection = intersect(featureset1, featureset2)
+    assert len(intersection['features']) == 2
+
+    count = get_intersect_count(intersection, 'id')
+    assert count == 3
+
+
 def test_json2ogr():
     geom_converted_version = json2ogr(DISSOLVE_GEOJSON)
 
