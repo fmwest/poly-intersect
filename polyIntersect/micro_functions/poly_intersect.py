@@ -203,13 +203,15 @@ def get_intersect_area(featureset, intersection, category=None):
     the intersected featureset
     '''
     validate_featureset(intersection, category)
+    for f in intersection['features']:
+        f['properties']['area'] = f['geometry'].area
 
     if category:
-        area_overlap = {f['properties'][category]: f['geometry'].area
+        area_overlap = {f['properties'][category]: f['properties']['area']
                         for f in intersection['features']}
     else:
         f = intersection['features'][0]
-        area_overlap = f['geometry'].area
+        area_overlap = f['properties']['area']
 
     return area_overlap
 
@@ -225,14 +227,16 @@ def get_intersect_area_percent(featureset, intersection, category=None):
     '''
     validate_featureset(intersection, category)
     aoi_area = get_aoi_area(featureset)
+    for f in intersection['features']:
+        f['properties']['area_percent'] = f['geometry'].area * 100. / aoi_area
 
     if category:
         pct_overlap = {f['properties'][category]:
-                       f['geometry'].area * 100.0 / aoi_area
+                       f['properties']['area_percent']
                        for f in intersection['features']}
     else:
         f = intersection['features'][0]
-        pct_overlap = f['geometry'].area * 100.0 / aoi_area
+        pct_overlap = f['properties']['area_percent']
 
     return pct_overlap
 
@@ -253,8 +257,10 @@ def get_intersect_z_scores(intersection, category, field):
     validate_featureset(intersection, category)
     scores = stats.zscore([f['properties'][field]
                            for f in intersection['features']])
-    return {f['properties'][category]: scores[i]
-            for i, f in enumerate(intersection['features'])}
+    for i, f in enumerate(intersection['features']):
+        f['properties']['z-score'] = scores[i]
+    return {f['properties'][category]: f['properties']['z-score']
+            for f in intersection['features']}
 
 
 def is_valid(analysis_method):

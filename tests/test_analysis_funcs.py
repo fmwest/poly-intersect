@@ -155,7 +155,7 @@ def test_area_percent_with_categories():
     assert len(field_vals) == len(set(field_vals))
 
     pct_overlap = get_intersect_area_percent(featureset1, intersection,
-                                             field='id')
+                                             category='id')
     assert isinstance(pct_overlap, dict)
     assert len(pct_overlap.keys()) == 2
     for val in pct_overlap.keys():
@@ -172,7 +172,7 @@ def test_area_stats_with_categories():
     assert len(field_vals) == len(set(field_vals))
 
     pct_overlap = get_intersect_area_percent(featureset1, intersection,
-                                             field='id')
+                                             category='id')
     assert isinstance(pct_overlap, dict)
     assert len(pct_overlap.keys()) == 2
     for val in pct_overlap.keys():
@@ -190,7 +190,7 @@ def test_area_percent_no_categories_fail():
 
     try:
         pct_overlap = get_intersect_area_percent(featureset1, intersection,
-                                                 field='id')
+                                                 category='id')
     except ValueError as e:
         assert str(e) == 'Intersected area must be dissolved to a single \
                               feature if no category field is specified'
