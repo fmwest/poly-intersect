@@ -1,6 +1,7 @@
 from os import path
 import rtree
 
+from polyIntersect.micro_functions.poly_intersect import esri_server2ogr
 from polyIntersect.micro_functions.poly_intersect import json2ogr
 from polyIntersect.micro_functions.poly_intersect import ogr2json
 from polyIntersect.micro_functions.poly_intersect import dissolve
@@ -91,7 +92,7 @@ def test_project():
     assert isinstance(geom_projected, dict)
     assert 'features' in geom_projected.keys()
     assert (geom_projected['crs']['properties']['name']
-           == 'urn:ogc:def:uom:EPSG::9102')
+            == 'urn:ogc:def:uom:EPSG::9102')
     assert (featureset['crs']['properties']['name']
            != 'urn:ogc:def:uom:EPSG::9102')
 
@@ -237,3 +238,12 @@ def test_ogr2json():
 
     for i, f in enumerate(geom_converted_back['features']):
         assert isinstance(f['geometry'], dict)
+
+
+def test_esri_server2json():
+    host = 'http://gis-gfw.wri.org'
+    layer = 'country_data/south_america/MapServer/4'
+    layer_url = path.join(host, 'arcgis/rest/services', layer)
+
+    ogr_featureset = esri_server2ogr(layer_url)
+    assert 'features' in ogr_featureset.keys()

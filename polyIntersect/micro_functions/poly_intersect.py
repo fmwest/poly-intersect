@@ -3,6 +3,8 @@ import polyIntersect.micro_functions.utils as u
 import json
 import itertools
 import rtree
+import requests
+
 from functools import partial
 import pyproj
 import numpy as np
@@ -14,7 +16,7 @@ from shapely.ops import unary_union, transform
 
 __all__ = ['json2ogr', 'ogr2json', 'dissolve', 'intersect', 'buffer_to_dist',
            'get_aoi_area', 'get_intersect_area', 'get_intersect_area_percent',
-           'get_intersect_count']
+           'get_intersect_count', 'esri_server2json']
 
 
 def json2ogr(in_json):
@@ -47,6 +49,29 @@ def ogr2json(featureset):
     return featureset
 
 
+def esri_server2ogr(layer_endpoint, where='1=1',
+                    out_fields='*', return_geometry=True,
+                    token=None):
+
+    url = layer_endpoint + '/query'
+
+    params = {}
+    params['where'] = where
+    params['outFields'] = out_fields
+    params['returnGeometry'] = return_geometry
+    params['token'] = token
+    params['f'] = 'geojson'
+
+    req = requests.post(url, data=params)
+    req.raise_for_status()
+
+    return json2ogr(req.json())
+
+
+def cartodb2ogr(service_endpoint):
+    pass
+
+
 def dissolve(featureset, field=None):
     '''
     Dissolve a set of geometries on a field, or dissolve fully to a single
@@ -54,7 +79,8 @@ def dissolve(featureset, field=None):
     '''
 
     if field:
-        def sort_func(k): return k['properties'][field]
+        def sort_func(k):
+            return k['properties'][field]
     else:
         sort_func = None
 
@@ -141,8 +167,7 @@ def project_local(featureset):
 
     return dict(type=featureset['type'],
                 crs=dict(type='name',
-                         properties=dict(
-                            name='urn:ogc:def:uom:EPSG::9102')),
+                         properties=dict(name='urn:ogc:def:uom:EPSG::9102')),
                 features=new_features)
 
 
