@@ -2,7 +2,6 @@ from os import path
 import logging
 import dask
 import json
-import yaml
 from flask import request, jsonify
 from polyIntersect.routes.api.v1 import endpoints, error
 from polyIntersect.validators import validate_greeting
@@ -95,15 +94,24 @@ def execute_model():
 
     graph = {
         'aoi': ['geojson', json.loads(user_json)],
+
         'reference_data': ['esri:server', layer_url],
+
         'dissolve-aoi': ['dissolve', 'aoi'],
-        'intersect-aoi-dataset': ['intersect', 'dissolve-aoi', 'reference_data'],
-        'intersect-area': ['get_intersect_area', 'dissolve-aoi', 'intersect-aoi-dataset', user_category],
-        'intersect-area-percent': ['get_intersect_area_percent', 'dissolve-aoi', 'intersect-aoi-dataset', user_category]
+
+        'intersect-aoi-dataset': ['intersect', 'dissolve-aoi',
+                                  'reference_data'],
+
+        'intersect-area': ['get_intersect_area', 'dissolve-aoi',
+                           'intersect-aoi-dataset', user_category],
+
+        'intersect-area-percent': ['get_intersect_area_percent',
+                                   'dissolve-aoi', 'intersect-aoi-dataset',
+                                   user_category]
     }
 
     dag = create_dag_from_json(json.dumps(graph))
-    outputs = ['intersect-area-percent','intersect-area']
+    outputs = ['intersect-area-percent', 'intersect-area']
     data = compute(dag, outputs)
     response = jsonify(data)
     response.status_code = 200
