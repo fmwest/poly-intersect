@@ -1,17 +1,13 @@
-"""The API MODULE"""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 import logging
 
 
 from flask import Flask
+
 from polyIntersect.config import SETTINGS
 from polyIntersect.routes.api.v1 import endpoints, error
 from polyIntersect.utils.files import load_config_json
+
 import CTRegisterMicroserviceFlask
 
 logging.basicConfig(

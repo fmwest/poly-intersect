@@ -3,15 +3,7 @@ import dask
 import json
 from flask import request, jsonify
 from polyIntersect.routes.api.v1 import endpoints
-from polyIntersect.validators import validate_greeting
 import polyIntersect.micro_functions.poly_intersect as analysis_funcs
-
-
-@endpoints.route('/hello', strict_slashes=False, methods=['GET', 'POST'])
-@validate_greeting
-def hello():
-    data = 'hello adnan'
-    return data
 
 
 def create_dag_from_json(graphJson):
@@ -61,9 +53,13 @@ def compute(graph, outputs):
     return final_output
 
 
-@endpoints.route('/brazil-biomes', strict_slashes=False,
-                 methods=['POST'])
-@validate_greeting
+@endpoints.route('/hello', strict_slashes=False, methods=['GET', 'POST'])
+def hello():
+    data = 'hello adnan'
+    return data
+
+
+@endpoints.route('/brazil-biomes', strict_slashes=False, methods=['POST'])
 def execute_model():
 
     host = 'http://gis-gfw.wri.org'
@@ -75,20 +71,16 @@ def execute_model():
     user_category = str(request.form['category'])
 
     # TODO: the extra json parse can probably go away...
-
     graph = {
+
         'aoi': ['geojson', json.loads(user_json)],
-
         'reference_data': ['esri:server', layer_url],
-
         'dissolve-aoi': ['dissolve', 'aoi'],
-
         'intersect-aoi-dataset': ['intersect', 'dissolve-aoi',
                                   'reference_data'],
 
         'intersect-area': ['get_intersect_area', 'dissolve-aoi',
                            'intersect-aoi-dataset', user_category],
-
         'intersect-area-percent': ['get_intersect_area_percent',
                                    'dissolve-aoi', 'intersect-aoi-dataset',
                                    user_category]
