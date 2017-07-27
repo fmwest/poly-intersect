@@ -41,26 +41,3 @@ def test_example_graph():
     assert result.content_type == 'application/json'
     assert 'intersect-area' in list(result_obj.keys())
     assert 'intersect-area-percent' in list(result_obj.keys())
-
-
-@slow
-def test_dissolve_indonesia():
-    url = '/api/v1/polyIntersect/executeGraph?'
-    INDONESIA_GEOJSON = get_indonesia()
-
-    feats1 = json.loads(INDONESIA_GEOJSON)
-    graph = {
-        'convert_aoi': ['geojson', feats1],
-        'dissolve_aoi': ['dissolve', 'convert_aoi'],
-    }
-
-    payload = {}
-    payload['dag'] = json.dumps(graph)
-    payload['result_keys'] = json.dumps(['dissolve_aoi'])
-
-    result = app.post(url, data=payload)
-    result_obj = json.loads(result.data)
-
-    assert result.status_code == 200
-    assert result.content_type == 'application/json'
-    assert 'dissolve_aoi' in list(result_obj.keys())
