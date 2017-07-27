@@ -5,7 +5,7 @@ import itertools
 import rtree
 import requests
 
-from functools import partial
+from functools import partial, lru_cache
 import pyproj
 import numpy as np
 from scipy import stats
@@ -49,6 +49,7 @@ def ogr2json(featureset):
     return featureset
 
 
+@lru_cache(5)
 def esri_server2ogr(layer_endpoint, where='1=1',
                     out_fields='*', return_geometry=True,
                     token=None):
