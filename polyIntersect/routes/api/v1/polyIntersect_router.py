@@ -55,20 +55,18 @@ def compute(graph, outputs):
 
 @endpoints.route('/hello', strict_slashes=False, methods=['GET', 'POST'])
 def hello():
-    data = 'hello adnan'
-    return data
+    data = dict(name='hello adnan')
+    return jsonify(data)
 
 
 @endpoints.route('/brazil-biomes', strict_slashes=False, methods=['POST'])
 def execute_model():
-
     host = 'http://gis-gfw.wri.org'
     layer = 'country_data/south_america/MapServer/4'
     layer_url = path.join(host, 'arcgis/rest/services', layer)
 
-    # form params
-    user_json = str(request.form['user_json'])
-    user_category = str(request.form['category'])
+    user_json = str(request.json['user_json'])
+    user_category = str(request.json['category'])
 
     # TODO: the extra json parse can probably go away...
     graph = {
