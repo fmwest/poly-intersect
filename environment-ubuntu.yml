@@ -11,11 +11,11 @@ dependencies:
 - dbus=1.10.10=3
 - descartes=1.1.0=py36_0
 - expat=2.2.1=0
-- fiona=1.7.8=np113py36_0
+- fiona=1.7.7=np112py36_0
 - fontconfig=2.12.1=4
 - freetype=2.7=1
 - freexl=1.0.2=2
-- gdal=2.2.1=np113py36_0
+- gdal=2.2.1=np112py36_0
 - geopandas=0.2.1=py36_4
 - geos=3.5.1=1
 - gettext=0.19.7=1
@@ -43,9 +43,10 @@ dependencies:
 - libtiff=4.0.6=7
 - libxcb=1.12=1
 - libxml2=2.9.4=4
-- matplotlib=2.0.2=np113py36_0
+- matplotlib=2.0.2=py36_1
 - munch=2.1.1=py36_0
 - openjpeg=2.1.2=3
+- pandas=0.20.3=py36_1
 - pcre=8.39=0
 - proj4=4.9.3=4
 - psycopg2=2.7.1=py36_0
@@ -55,7 +56,7 @@ dependencies:
 - pysal=1.13.0=py36_0
 - qt=5.6.2=3
 - rtree=0.8.3=py36_0
-- shapely=1.5.17=np113py36_3
+- shapely=1.5.17=py36_4
 - sip=4.18=py36_1
 - sqlalchemy=1.1.11=py36_0
 - xerces-c=3.1.4=3
@@ -73,9 +74,8 @@ dependencies:
 - locket=0.2.0=py36_1
 - markupsafe=0.23=py36_2
 - mkl=2017.0.3=0
-- numpy=1.13.1=py36_0
+- numpy=1.12.1=py36_0
 - openssl=1.0.2l=0
-- pandas=0.20.2=np113py36_0
 - partd=0.3.8=py36_0
 - pip=9.0.1=py36_1
 - py=1.4.34=py36_0
@@ -86,7 +86,7 @@ dependencies:
 - pyyaml=3.12=py36_0
 - readline=6.2=2
 - requests=2.14.2=py36_0
-- scipy=0.19.1=np113py36_0
+- scipy=0.19.1=np112py36_0
 - setuptools=27.2.0=py36_0
 - six=1.10.0=py36_0
 - sqlite=3.13.0=0
