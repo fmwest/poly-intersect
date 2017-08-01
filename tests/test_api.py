@@ -5,11 +5,7 @@ import pytest
 from polyIntersect import app
 
 # data
-from .sample_data import DISSOLVE_GEOJSON
-from .sample_data import INTERSECT_BASE_GEOJSON
-from .sample_data import INTERSECT_PARTIALLY_WITHIN_GEOJSON
 from .sample_data import BRAZIL_USER_POLY
-from .sample_data import get_indonesia
 
 
 # test flask client
@@ -28,14 +24,17 @@ def test_hello():
 
 
 def test_example_graph():
-    url = '/api/v1/polyIntersect/brazil-biomes?'
+    url = '/api/v1/polyIntersect/brazil-biomes'
 
     payload = {}
     payload['user_json'] = BRAZIL_USER_POLY
     payload['category'] = 'name'
 
-    result = app.post(url, data=payload)
+    headers = {'content-type': 'application/json'}
+
+    result = app.post(url, data=json.dumps(payload), headers=headers)
     result_obj = json.loads(result.data)
+    print(result_obj)
 
     assert result.status_code == 200
     assert result.content_type == 'application/json'

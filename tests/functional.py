@@ -1,28 +1,45 @@
-import json
 import requests
 
-from sample_data import BRAZIL_USER_POLY
+from tests.sample_data import BRAZIL_USER_POLY
 
 
-def test_brazil_biomes():
-    host = 'https://staging-api.globalforestwatch.org'
-    url = '{}/v1/polyIntersect/brazil-biomes?'.format(host)
+def test_hello():
+    url = 'http://localhost:9000/v1/polyIntersect/hello'
+    result = requests.get(url)
+    print(result)
+
+
+def test_brazil_biomes_local():
+    # host = 'https://staging-api.globalforestwatch.org'
+    # url = '{}/v1/polyIntersect/brazil-biomes?'.format(host)
     url = 'http://localhost:5700/api/v1/polyIntersect/brazil-biomes'
-    # url = 'http://localhost:9000/v1/polyIntersect/brazil-biomes'
+    run_request(url)
 
-    feats1 = json.loads(BRAZIL_USER_POLY)
 
+def test_brazil_biomes_control_tower():
+    url = 'http://localhost:9000/v1/polyIntersect/brazil-biomes'
+    run_request(url)
+
+
+def test_brazil_biomes_control_tower_remote():
+    url = 'http://staging-api.globalforestwatch.org/v1/polyIntersect/brazil-biomes'
+    run_request(url)
+
+
+def run_request(url):
     payload = {}
-    payload['user_json'] = json.dumps(feats1)
+    payload['user_json'] = BRAZIL_USER_POLY
     payload['category'] = 'name'
 
-    result = requests.post(url, data=payload)
+    result = requests.post(url, json=payload,
+                           allow_redirects=True)
+    print(result)
     result_obj = result.json()
-
     print(result_obj)
 
-    assert 'intersect-area' in list(result_obj.keys())
-    assert 'intersect-area-percent' in list(result_obj.keys())
 
 if __name__ == '__main__':
-    test_brazil_biomes()
+    test_hello()
+    test_brazil_biomes_local()
+    test_brazil_biomes_control_tower()
+    test_brazil_biomes_control_tower_remote()
