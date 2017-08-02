@@ -1,0 +1,20 @@
+{
+	"area-percentarea-category": {
+		"graph": {
+			"aoi": ["geojson", "{user_json}"],
+	        "reference_data": ["esri:server", "{layer_url}"],
+	        "dissolve-aoi": ["dissolve", "aoi"],
+	        "intersect-aoi-dataset": ["intersect", "dissolve-aoi",
+	                                  "reference_data"],
+
+	        "intersect-area": ["get_intersect_area", "dissolve-aoi",
+	                           "intersect-aoi-dataset", "{category}"],
+	        "intersect-area-percent": ["get_intersect_area_percent",
+	                                   "dissolve-aoi",
+	                                   "intersect-aoi-dataset",
+	                                   "{category}"]
+		},
+		"datasets": ["brazil-biomes", "global-land-cover", "idn-land-cover",
+			"sea-land-cover", "idn-legal-classifications", "wdpa"]
+	}
+}

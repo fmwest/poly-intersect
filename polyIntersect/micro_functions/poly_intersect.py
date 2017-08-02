@@ -54,7 +54,7 @@ def esri_server2ogr(layer_endpoint, where='1=1',
                     out_fields='*', return_geometry=True,
                     token=None):
 
-    url = layer_endpoint + '/query'
+    url = layer_endpoint.replace('?f=pjson', '') + '/query'
 
     params = {}
     params['where'] = where

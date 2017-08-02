@@ -10,11 +10,20 @@
 		}
 	},
 	{
-		"path": "/v1/polyIntersect/brazil-biomes",
+		"path": "/v1/polyIntersect/fiona",
+		"method": "GET",
+		"binary": true,
+		"redirect": {
+			"method": "GET",
+			"path": "/api/v1/polyIntersect/fiona"
+		}
+	},
+	{
+		"path": "/v1/polyIntersect/generic",
 		"method": "POST",
 		"redirect": {
 			"method": "POST",
-			"path": "/api/v1/polyIntersect/brazil-biomes"
+			"path": "/api/v1/polyIntersect/generic"
 		}
 	}]
 }

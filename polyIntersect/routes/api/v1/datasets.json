@@ -1,0 +1,26 @@
+{
+	"brazil-biomes": {
+		"id": "e0c60253-5162-46b9-b8f4-ded9e664b9fc",
+		"category": "name"
+	},
+	"global-land-cover": {
+		"id": "",
+		"category": ""
+	},
+	"idn-land-cover": {
+		"id": "ace16b89-5006-46ad-bc62-22d0e7fc0a1c",
+		"category": ""
+	},
+	"sea-land-cover": {
+		"id": "",
+		"category": ""
+	},
+	"idn-legal-classifications": {
+		"id": "01522484-3f83-4b6d-872b-03917eae82e3",
+		"category": ""
+	},
+	"wdpa": {
+		"id": "",
+		"category": ""
+	}
+}
