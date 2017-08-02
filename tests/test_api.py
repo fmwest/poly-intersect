@@ -6,6 +6,7 @@ from polyIntersect import app
 
 # data
 from .sample_data import BRAZIL_USER_POLY
+from .sample_data import INDONESIA_USER_POLY
 
 
 # test flask client
@@ -27,9 +28,9 @@ def test_example_graph():
     url = '/api/v1/polyIntersect/generic'
 
     payload = {}
-    payload['user_json'] = BRAZIL_USER_POLY
-    payload['analysis'] = 'area-percentarea-category'
-    payload['dataset'] = 'brazil-biomes'
+    payload['analysis'] = 'area-percentarea'
+    payload['dataset'] = 'plantation-species'
+    payload['user_json'] = INDONESIA_USER_POLY
 
     headers = {'content-type': 'application/json'}
 
