@@ -24,11 +24,12 @@ def test_hello():
 
 
 def test_example_graph():
-    url = '/api/v1/polyIntersect/brazil-biomes'
+    url = '/api/v1/polyIntersect/generic'
 
     payload = {}
     payload['user_json'] = BRAZIL_USER_POLY
-    payload['category'] = 'name'
+    payload['analysis'] = 'area-percentarea-category'
+    payload['dataset'] = 'brazil-biomes'
 
     headers = {'content-type': 'application/json'}
 
