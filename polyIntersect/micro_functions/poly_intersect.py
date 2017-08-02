@@ -50,7 +50,7 @@ def ogr2json(featureset):
 
 
 @lru_cache(5)
-def esri_server2ogr(layer_endpoint, where='1=1',
+def esri_server2ogr(layer_endpoint, envelope, where='1=1',
                     out_fields='*', return_geometry=True,
                     token=None):
 
@@ -62,6 +62,8 @@ def esri_server2ogr(layer_endpoint, where='1=1',
     params['returnGeometry'] = return_geometry
     params['token'] = token
     params['f'] = 'geojson'
+    params['geometry'] = envelope
+    params['geometryType'] = 'esriGeometryEnvelope'
 
     req = requests.post(url, data=params)
     req.raise_for_status()
