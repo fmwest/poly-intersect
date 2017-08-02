@@ -4,6 +4,7 @@ import json
 from flask import request, jsonify
 from polyIntersect.routes.api.v1 import endpoints
 import polyIntersect.micro_functions.poly_intersect as analysis_funcs
+import requests
 
 
 def create_dag_from_json(graphJson):
@@ -59,31 +60,52 @@ def hello():
     return jsonify(data)
 
 
-@endpoints.route('/brazil-biomes', strict_slashes=False, methods=['POST'])
+@endpoints.route('/fiona', strict_slashes=False, methods=['GET', 'POST'])
+def fiona():
+    data = dict(name='hello fiona')
+    return jsonify(data)
+
+
+@endpoints.route('/generic', strict_slashes=False, methods=['POST'])
 def execute_model():
-    host = 'http://gis-gfw.wri.org'
-    layer = 'country_data/south_america/MapServer/4'
-    layer_url = path.join(host, 'arcgis/rest/services', layer)
+    # read config files
+    with open(path.join(path.dirname(__file__), 'analyses.json')) as f:
+        analyses = json.load(f)
+    with open(path.join(path.dirname(__file__), 'datasets.json')) as f:
+        datasets = json.load(f)
 
+    # read user input
+    analysis = str(request.json['analysis'])
+    dataset = str(request.json['dataset'])
     user_json = str(request.json['user_json'])
-    user_category = str(request.json['category'])
 
-    # TODO: the extra json parse can probably go away...
-    graph = {
+    # get category for dataset
+    category = datasets[dataset]['category']
 
-        'aoi': ['geojson', json.loads(user_json)],
-        'reference_data': ['esri:server', layer_url],
-        'dissolve-aoi': ['dissolve', 'aoi'],
-        'intersect-aoi-dataset': ['intersect', 'dissolve-aoi',
-                                  'reference_data'],
+    # get gfw api url for dataset based on its id
+    dataset_id = datasets[dataset]['id']
+    host = 'https://staging-api.globalforestwatch.org'
+    dataset_endpoint = 'dataset/{}'.format(dataset_id)
+    dataset_url = path.join(host, dataset_endpoint)
 
-        'intersect-area': ['get_intersect_area', 'dissolve-aoi',
-                           'intersect-aoi-dataset', user_category],
-        'intersect-area-percent': ['get_intersect_area_percent',
-                                   'dissolve-aoi', 'intersect-aoi-dataset',
-                                   user_category]
-    }
+    # query gfw api for the layer url
+    dataset_info = requests.get(dataset_url).json()
+    layer_url = dataset_info['data']['attributes']['connectorUrl']
 
+    # get graph and populate with parameters
+    graph = analyses[analysis]['graph']
+    if dataset not in analyses[analysis]['datasets']:
+        raise ValueError('dataset must be one of the following: \
+            {}'.format(analyses[analysis]['datasets']))
+    for key, vals in graph.items():
+        vals = [val.format(user_json=user_json,
+                           layer_url=layer_url,
+                           category=category) for val in vals]
+        graph[key] = vals
+
+    # create and compute graph
+    assert isinstance(graph, dict)
+    assert isinstance(json.dumps(graph), str)
     dag = create_dag_from_json(json.dumps(graph))
     outputs = ['intersect-area-percent', 'intersect-area']
     data = compute(dag, outputs)
