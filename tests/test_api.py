@@ -42,3 +42,4 @@ def test_example_graph():
     assert result.content_type == 'application/json'
     assert 'intersect-area' in list(result_obj.keys())
     assert 'intersect-area-percent' in list(result_obj.keys())
+    assert result_obj['intersect-area'] > 0

@@ -54,46 +54,6 @@ def compute(graph, outputs):
     return final_output
 
 
-def explode(coords):
-    """Explode a GeoJSON geometry's coordinates object and yield coordinate
-    tuples. As long as the input is conforming, the type of the geometry
-    doesn't matter.
-    https://gis.stackexchange.com/questions/90553/fiona-get-each-feature-
-    extent-bounds"""
-    for e in coords:
-        if isinstance(e, (float, int)):
-            yield coords
-            break
-        else:
-            for f in explode(e):
-                yield f
-def bbox(f):
-    x, y = zip(*list(explode(f['geometry']['coordinates'])))
-    return min(x), min(y), max(x), max(y)
-
-
-def getEnvelope(user_json):
-    envelope = {}
-    for f in user_json['features']:
-        x1, y1, x2, y2 = bbox(f)
-        if envelope:
-            if x1 < envelope['xmin']:
-                envelope['xmin'] = x1
-            if y1 < envelope['ymin']:
-                envelope['ymin'] = y1
-            if x2 > envelope['xmax']:
-                envelope['xmax'] = x2
-            if y2 > envelope['ymax']:
-                envelope['ymax'] = y2
-        else:
-            envelope['xmin'] = x1
-            envelope['ymin'] = y1
-            envelope['xmax'] = x2
-            envelope['ymax'] = y2
-    envelope["spatialReference"] = {"wkid":4326}
-    return envelope
-
-
 @endpoints.route('/hello', strict_slashes=False, methods=['GET', 'POST'])
 def hello():
     data = dict(name='hello adnan')
@@ -119,9 +79,6 @@ def execute_model():
     dataset = str(request.json['dataset'])
     user_json = str(request.json['user_json'])
 
-    # get envelope for querying the dataset endpoint
-    envelope = json.dumps(getEnvelope(json.loads(user_json)))
-
     # get category for dataset
     category = datasets[dataset]['category']
 
@@ -143,7 +100,6 @@ def execute_model():
     for key, vals in graph.items():
         vals = [val.format(user_json=user_json,
                            layer_url=layer_url,
-                           envelope=envelope,
                            category=category) for val in vals]
         graph[key] = vals
 
