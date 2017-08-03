@@ -1,5 +1,6 @@
 from os import path
 import rtree
+import json
 
 from polyIntersect.micro_functions.poly_intersect import esri_server2ogr
 from polyIntersect.micro_functions.poly_intersect import json2ogr
@@ -22,6 +23,8 @@ from .sample_data import DISSOLVE_GEOJSON
 from .sample_data import INTERSECT_BASE_GEOJSON
 from .sample_data import INTERSECT_PARTIALLY_WITHIN_GEOJSON
 from .sample_data import INTERSECT_MULTIPLE_FEATURES
+from .sample_data import INDONESIA_USER_POLY
+from .sample_data import BRAZIL_USER_POLY
 
 fixtures = path.abspath(path.join(path.dirname(__file__), 'fixtures'))
 
@@ -245,6 +248,7 @@ def test_esri_server2json():
     layer = 'country_data/south_america/MapServer/4'
     layer_url = path.join(host, 'arcgis/rest/services', layer)
 
-    featureset = esri_server2ogr(layer_url)
+    featureset = esri_server2ogr(layer_url, BRAZIL_USER_POLY)
     assert 'features' in featureset.keys()
     assert isinstance(featureset['features'][0]['geometry'], (Polygon, MultiPolygon))
+    assert len(featureset['features']) > 0

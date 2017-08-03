@@ -56,5 +56,8 @@ with open(path.join(fixtures, 'intersect_partially_within.geojson')) as f:
 with open(path.join(fixtures, 'brasil_user_poly.geojson')) as f:
     BRAZIL_USER_POLY = "".join(f.read().split())
 
+with open(path.join(fixtures, 'indonesia_user_poly.geojson')) as f:
+    INDONESIA_USER_POLY = "".join(f.read().split())
+
 with open(path.join(fixtures, 'intersect_multiple_features.geojson')) as f:
     INTERSECT_MULTIPLE_FEATURES = "".join(f.read().split())

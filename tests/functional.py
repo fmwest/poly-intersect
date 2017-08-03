@@ -1,6 +1,6 @@
 import requests
 
-from sample_data import BRAZIL_USER_POLY
+from sample_data import INDONESIA_USER_POLY
 
 
 def test_hello():
@@ -32,9 +32,9 @@ def test_brazil_biomes_control_tower_remote():
 
 def run_request(url):
     payload = {}
-    payload['analysis'] = 'area-percentarea-category'
-    payload['dataset'] = 'brazil-biomes'
-    payload['user_json'] = BRAZIL_USER_POLY
+    payload['analysis'] = 'area-percentarea'
+    payload['dataset'] = 'plantation-species'
+    payload['user_json'] = INDONESIA_USER_POLY
 
     print(url)
 
@@ -47,7 +47,7 @@ def run_request(url):
 
 if __name__ == '__main__':
     # test_hello()
-    test_fiona()
+    # test_fiona()
     test_brazil_biomes_local()
     test_brazil_biomes_control_tower()
     # test_brazil_biomes_control_tower_remote()

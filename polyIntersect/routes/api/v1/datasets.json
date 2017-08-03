@@ -7,19 +7,39 @@
 		"id": "",
 		"category": ""
 	},
-	"idn-land-cover": {
-		"id": "ace16b89-5006-46ad-bc62-22d0e7fc0a1c",
-		"category": ""
-	},
 	"sea-land-cover": {
 		"id": "",
 		"category": ""
 	},
 	"idn-legal-classifications": {
 		"id": "01522484-3f83-4b6d-872b-03917eae82e3",
-		"category": ""
+		"category": "lc_general"
 	},
 	"wdpa": {
+		"id": "",
+		"category": ""
+	},
+	"plantation-species": {
+		"id": "9a8f7e55-9ec7-4be2-b7c5-3e0864ed4e54",
+		"category": "spec_simp"
+	},
+	"land-rights": {
+		"id": "c8c69e3e-e75c-4ba9-8348-dd0787a9306b",
+		"category": ""
+	},
+	"aze": {
+		"id": "",
+		"category": ""
+	},
+	"tree-cover-extent": {
+		"id": "",
+		"category": ""
+	},
+	"ifl": {
+		"id": "",
+		"category": ""
+	},
+	"peat": {
 		"id": "",
 		"category": ""
 	}

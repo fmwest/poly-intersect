@@ -49,8 +49,50 @@ def ogr2json(featureset):
     return featureset
 
 
+def explode(coords):
+    """Explode a GeoJSON geometry's coordinates object and yield coordinate
+    tuples. As long as the input is conforming, the type of the geometry
+    doesn't matter.
+    https://gis.stackexchange.com/questions/90553/fiona-get-each-feature-
+    extent-bounds"""
+    for e in coords:
+        if isinstance(e, (float, int)):
+            yield coords
+            break
+        else:
+            for f in explode(e):
+                yield f
+
+
+def bbox(f):
+    x, y = zip(*list(explode(f['geometry']['coordinates'])))
+    return min(x), min(y), max(x), max(y)
+
+
+def getEnvelope(user_json):
+    envelope = {}
+    for f in user_json['features']:
+        x1, y1, x2, y2 = bbox(f)
+        if envelope:
+            if x1 < envelope['xmin']:
+                envelope['xmin'] = x1
+            if y1 < envelope['ymin']:
+                envelope['ymin'] = y1
+            if x2 > envelope['xmax']:
+                envelope['xmax'] = x2
+            if y2 > envelope['ymax']:
+                envelope['ymax'] = y2
+        else:
+            envelope['xmin'] = x1
+            envelope['ymin'] = y1
+            envelope['xmax'] = x2
+            envelope['ymax'] = y2
+    envelope["spatialReference"] = {"wkid": 4326}
+    return envelope
+
+
 @lru_cache(5)
-def esri_server2ogr(layer_endpoint, where='1=1',
+def esri_server2ogr(layer_endpoint, aoi, where='1=1',
                     out_fields='*', return_geometry=True,
                     token=None):
 
@@ -62,6 +104,9 @@ def esri_server2ogr(layer_endpoint, where='1=1',
     params['returnGeometry'] = return_geometry
     params['token'] = token
     params['f'] = 'geojson'
+    params['geometry'] = str(getEnvelope(json.loads(aoi)))
+    params['geometryType'] = 'esriGeometryEnvelope'
+    params['spatialRel'] = 'esriSpatialRelEnvelopeIntersects'
 
     req = requests.post(url, data=params)
     req.raise_for_status()
@@ -209,6 +254,8 @@ def get_aoi_area(featureset):
 def validate_featureset(featureset, field=None):
     '''
     '''
+    if len(featureset['features']) == 0:
+        return False
     if field:
         field_vals = [f['properties'][field] for f in featureset['features']]
         if not len(field_vals) == len(set(field_vals)):
@@ -218,6 +265,7 @@ def validate_featureset(featureset, field=None):
         if len(featureset['features']) > 1:
             raise ValueError('Intersected area must be dissolved to a single \
                               feature if no category field is specified')
+    return True
 
 
 def get_intersect_area(featureset, intersection, category=None):
@@ -229,7 +277,9 @@ def get_intersect_area(featureset, intersection, category=None):
     value in the category field. If not, there must be one feature total in
     the intersected featureset
     '''
-    validate_featureset(intersection, category)
+    if not validate_featureset(intersection, category):
+        return 0
+
     for f in intersection['features']:
         f['properties']['area'] = f['geometry'].area
 
@@ -252,7 +302,9 @@ def get_intersect_area_percent(featureset, intersection, category=None):
     value in the category field. If not, there must be one feature total in
     the intersected featureset
     '''
-    validate_featureset(intersection, category)
+    if not validate_featureset(intersection, category):
+        return 0
+
     aoi_area = get_aoi_area(featureset)
     for f in intersection['features']:
         f['properties']['area_percent'] = f['geometry'].area * 100. / aoi_area
@@ -281,7 +333,9 @@ def get_intersect_z_scores(intersection, category, field):
     Get z score of numerical attribute from features of an intersection with
     the user AOI
     '''
-    validate_featureset(intersection, category)
+    if not validate_featureset(intersection, category):
+        return 0
+
     scores = stats.zscore([f['properties'][field]
                            for f in intersection['features']])
     for i, f in enumerate(intersection['features']):

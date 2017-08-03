@@ -2,7 +2,7 @@
 	"area-percentarea-category": {
 		"graph": {
 			"aoi": ["geojson", "{user_json}"],
-	        "reference_data": ["esri:server", "{layer_url}"],
+	        "reference_data": ["esri:server", "{layer_url}", "{user_json}"],
 	        "dissolve-aoi": ["dissolve", "aoi"],
 	        "intersect-aoi-dataset": ["intersect", "dissolve-aoi",
 	                                  "reference_data"],
@@ -16,5 +16,24 @@
 		},
 		"datasets": ["brazil-biomes", "global-land-cover", "idn-land-cover",
 			"sea-land-cover", "idn-legal-classifications", "wdpa"]
+	},
+	"area-percentarea": {
+		"graph": {
+			"aoi": ["geojson", "{user_json}"],
+	        "reference_data": ["esri:server", "{layer_url}", "{user_json}"],
+	        "dissolve-aoi": ["dissolve", "aoi"],
+	        "dissolve-dataset": ["dissolve", "reference_data"],
+	        "intersect-aoi-dataset": ["intersect", "dissolve-aoi",
+	                                  "dissolve-dataset"],
+
+	        "intersect-area": ["get_intersect_area", "dissolve-aoi",
+	                           "intersect-aoi-dataset"],
+	        "intersect-area-percent": ["get_intersect_area_percent",
+	                                   "dissolve-aoi",
+	                                   "intersect-aoi-dataset"]
+		},
+		"datasets": ["plantation-species", "primary-forest",
+			"idn-primary-forest", "wdpa", "land-rights", "aze",
+			"tree-cover-extent", "ifl", "peat"]
 	}
 }
