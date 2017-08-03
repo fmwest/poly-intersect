@@ -12,10 +12,10 @@ from .sample_data import INDONESIA_USER_POLY
 # test flask client
 app = app.test_client()
 
-slow = pytest.mark.skipif(
-    not pytest.config.getoption("--runslow"),
-    reason="need --runslow option to run"
-)
+# slow = pytest.mark.skipif(
+#     not pytest.config.getoption("--runslow"),
+#     reason="need --runslow option to run"
+# )
 
 
 def test_hello():

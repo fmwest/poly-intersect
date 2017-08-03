@@ -50,4 +50,4 @@ if __name__ == '__main__':
     # test_fiona()
     test_brazil_biomes_local()
     test_brazil_biomes_control_tower()
-    # test_brazil_biomes_control_tower_remote()
+    test_brazil_biomes_control_tower_remote()
