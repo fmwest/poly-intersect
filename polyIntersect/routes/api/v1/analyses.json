@@ -2,7 +2,7 @@
 	"area-percentarea-category": {
 		"graph": {
 			"aoi": ["geojson", "{user_json}"],
-	        "reference_data": ["esri:server", "{layer_url}", "{envelope}"],
+	        "reference_data": ["esri:server", "{layer_url}", "{user_json}"],
 	        "dissolve-aoi": ["dissolve", "aoi"],
 	        "intersect-aoi-dataset": ["intersect", "dissolve-aoi",
 	                                  "reference_data"],
@@ -20,7 +20,7 @@
 	"area-percentarea": {
 		"graph": {
 			"aoi": ["geojson", "{user_json}"],
-	        "reference_data": ["esri:server", "{layer_url}", "{envelope}"],
+	        "reference_data": ["esri:server", "{layer_url}", "{user_json}"],
 	        "dissolve-aoi": ["dissolve", "aoi"],
 	        "dissolve-dataset": ["dissolve", "reference_data"],
 	        "intersect-aoi-dataset": ["intersect", "dissolve-aoi",
