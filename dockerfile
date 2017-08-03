@@ -45,5 +45,9 @@ RUN chown $USER:$USER /opt/$NAME
 EXPOSE 5700
 USER $USER
 
+# Run unit tests
+ENTRYPOINT ["/bin/bash", "-c"]
+RUN ["/bin/bash", "-c", "source activate gfw-api && exec pytest -v"]
+
 # Launch script
 ENTRYPOINT ["./entrypoint.sh"]
