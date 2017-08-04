@@ -7,10 +7,6 @@
 		"id": "",
 		"category": ""
 	},
-	"sea-land-cover": {
-		"id": "",
-		"category": ""
-	},
 	"idn-legal-classifications": {
 		"id": "01522484-3f83-4b6d-872b-03917eae82e3",
 		"category": "lc_general"
@@ -36,11 +32,11 @@
 		"category": ""
 	},
 	"ifl": {
-		"id": "",
+		"id": "1698b626-176f-4822-aa54-31f22acba136",
 		"category": ""
 	},
 	"peat": {
-		"id": "",
+		"id": "4c6b1dcf-7b7e-43c1-9022-be4efc895b39",
 		"category": ""
 	}
 }

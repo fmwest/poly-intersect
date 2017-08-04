@@ -29,7 +29,7 @@ def test_example_graph():
 
     payload = {}
     payload['analysis'] = 'area-percentarea'
-    payload['dataset'] = 'plantation-species'
+    payload['dataset'] = 'ifl'
     payload['user_json'] = INDONESIA_USER_POLY
 
     headers = {'content-type': 'application/json'}
