@@ -64,4 +64,4 @@ def gone(e):
 
 @app.errorhandler(500)
 def internal_server_error(e):
-    return error(status=500, detail='Internal Server Error')
+    return error(status=500, detail=str(e))
