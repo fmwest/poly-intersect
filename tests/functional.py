@@ -33,7 +33,7 @@ def test_brazil_biomes_control_tower_remote():
 def run_request(url):
     payload = {}
     payload['analysis'] = 'area-percentarea'
-    payload['dataset'] = 'plantation-species'
+    payload['dataset'] = 'ifl'
     payload['user_json'] = INDONESIA_USER_POLY
 
     print(url)
