@@ -54,19 +54,6 @@ def compute(graph, outputs):
     return final_output
 
 
-@endpoints.route('/hello', strict_slashes=False, methods=['GET', 'POST'])
-def hello():
-    data = dict(name='hello adnan')
-    return jsonify(data)
-
-
-@endpoints.route('/fiona', strict_slashes=False, methods=['GET', 'POST'])
-def fiona():
-    data = dict(name='hello fiona')
-    return jsonify(data)
-
-
-@endpoints.route('/generic', strict_slashes=False, methods=['POST'])
 def execute_model():
     # read config files
     with open(path.join(path.dirname(__file__), 'analyses.json')) as f:
@@ -112,3 +99,9 @@ def execute_model():
     response = jsonify(data)
     response.status_code = 200
     return response
+
+
+@endpoints.route('/hello', strict_slashes=False, methods=['GET', 'POST'])
+def hello():
+    data = dict(name='hello adnan')
+    return jsonify(data)

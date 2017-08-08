@@ -24,22 +24,22 @@ def test_hello():
     assert result.status_code == 200
 
 
-def test_example_graph():
-    url = '/api/v1/polyIntersect/generic'
+# def test_example_graph():
+#     url = '/api/v1/polyIntersect/generic'
 
-    payload = {}
-    payload['analysis'] = 'area-percentarea'
-    payload['dataset'] = 'ifl'
-    payload['user_json'] = INDONESIA_USER_POLY
+#     payload = {}
+#     payload['analysis'] = 'area-percentarea'
+#     payload['dataset'] = 'ifl'
+#     payload['user_json'] = INDONESIA_USER_POLY
 
-    headers = {'content-type': 'application/json'}
+#     headers = {'content-type': 'application/json'}
 
-    result = app.post(url, data=json.dumps(payload), headers=headers)
-    result_obj = json.loads(result.data)
-    print(result_obj)
+#     result = app.post(url, data=json.dumps(payload), headers=headers)
+#     result_obj = json.loads(result.data)
+#     print(result_obj)
 
-    assert result.status_code == 200
-    assert result.content_type == 'application/json'
-    assert 'intersect-area' in list(result_obj.keys())
-    assert 'intersect-area-percent' in list(result_obj.keys())
-    assert result_obj['intersect-area'] > 0
+#     assert result.status_code == 200
+#     assert result.content_type == 'application/json'
+#     assert 'intersect-area' in list(result_obj.keys())
+#     assert 'intersect-area-percent' in list(result_obj.keys())
+#     assert result_obj['intersect-area'] > 0

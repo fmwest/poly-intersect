@@ -10,7 +10,7 @@ def test_hello():
 
 
 def test_fiona():
-    url = 'http://localhost:9000/v1/polyIntersect/fiona'
+    url = 'http://localhost:9000/v1/polyIntersect/idn-legal-classifications'
     result = requests.get(url)
     print(result)
 
@@ -47,7 +47,7 @@ def run_request(url):
 
 if __name__ == '__main__':
     # test_hello()
-    # test_fiona()
-    test_brazil_biomes_local()
-    test_brazil_biomes_control_tower()
-    test_brazil_biomes_control_tower_remote()
+    test_fiona()
+    # test_brazil_biomes_local()
+    # test_brazil_biomes_control_tower()
+    # test_brazil_biomes_control_tower_remote()
