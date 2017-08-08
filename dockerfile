@@ -47,7 +47,7 @@ USER $USER
 
 # Run unit tests
 ENTRYPOINT ["/bin/bash", "-c"]
-RUN ["/bin/bash", "-c", "source activate gfw-api && exec pytest -v"]
+RUN ["/bin/bash", "-c", "source activate gfw-api && exec pytest -v && source deactivate"]
 
 # Launch script
 ENTRYPOINT ["./entrypoint.sh"]

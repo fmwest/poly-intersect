@@ -54,19 +54,6 @@ def compute(graph, outputs):
     return final_output
 
 
-@endpoints.route('/hello', strict_slashes=False, methods=['GET', 'POST'])
-def hello():
-    data = dict(name='hello adnan')
-    return jsonify(data)
-
-
-@endpoints.route('/fiona', strict_slashes=False, methods=['GET', 'POST'])
-def fiona():
-    data = dict(name='hello fiona')
-    return jsonify(data)
-
-
-@endpoints.route('/generic', strict_slashes=False, methods=['POST'])
 def execute_model():
     # read config files
     with open(path.join(path.dirname(__file__), 'analyses.json')) as f:
@@ -112,3 +99,47 @@ def execute_model():
     response = jsonify(data)
     response.status_code = 200
     return response
+
+
+@endpoints.route('/hello', strict_slashes=False, methods=['GET', 'POST'])
+def hello():
+    data = dict(name='hello adnan')
+    return jsonify(data)
+
+
+@endpoints.route('/brazil-biomes', strict_slashes=False, methods=['GET', 'POST'])
+def brazilbiomes():
+	data = dict(name='hello brazil-biomes')
+	return jsonify(data)
+
+
+@endpoints.route('/global-land-cover', strict_slashes=False, methods=['GET', 'POST'])
+def globallandcover():
+	data = dict(name='hello global-land-cover')
+	return jsonify(data)
+
+
+@endpoints.route('/idn-land-cover', strict_slashes=False, methods=['GET', 'POST'])
+def idnlandcover():
+	data = dict(name='hello idn-land-cover')
+	return jsonify(data)
+
+
+@endpoints.route('/sea-land-cover', strict_slashes=False, methods=['GET', 'POST'])
+def sealandcover():
+	data = dict(name='hello sea-land-cover')
+	return jsonify(data)
+
+
+@endpoints.route('/idn-legal-classifications', strict_slashes=False, methods=['GET', 'POST'])
+def idnlegalclassifications():
+	data = dict(name='hello idn-legal-classifications')
+	return jsonify(data)
+
+
+@endpoints.route('/wdpa', strict_slashes=False, methods=['GET', 'POST'])
+def wdpa():
+	data = dict(name='hello wdpa')
+	return jsonify(data)
+
+

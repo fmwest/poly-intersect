@@ -10,21 +10,57 @@
 		}
 	},
 	{
-		"path": "/v1/polyIntersect/fiona",
+		"path": "/v1/polyIntersect/brazil-biomes",
 		"method": "GET",
 		"binary": true,
 		"redirect": {
 			"method": "GET",
-			"path": "/api/v1/polyIntersect/fiona"
+			"path": "/api/v1/polyIntersect/brazil-biomes"
 		}
 	},
 	{
-		"path": "/v1/polyIntersect/generic",
-		"method": "POST",
+		"path": "/v1/polyIntersect/global-land-cover",
+		"method": "GET",
+		"binary": true,
 		"redirect": {
-			"method": "POST",
-			"path": "/api/v1/polyIntersect/generic"
+			"method": "GET",
+			"path": "/api/v1/polyIntersect/global-land-cover"
+		}
+	},
+	{
+		"path": "/v1/polyIntersect/idn-land-cover",
+		"method": "GET",
+		"binary": true,
+		"redirect": {
+			"method": "GET",
+			"path": "/api/v1/polyIntersect/idn-land-cover"
+		}
+	},
+	{
+		"path": "/v1/polyIntersect/sea-land-cover",
+		"method": "GET",
+		"binary": true,
+		"redirect": {
+			"method": "GET",
+			"path": "/api/v1/polyIntersect/sea-land-cover"
+		}
+	},
+	{
+		"path": "/v1/polyIntersect/idn-legal-classifications",
+		"method": "GET",
+		"binary": true,
+		"redirect": {
+			"method": "GET",
+			"path": "/api/v1/polyIntersect/idn-legal-classifications"
+		}
+	},
+	{
+		"path": "/v1/polyIntersect/wdpa",
+		"method": "GET",
+		"binary": true,
+		"redirect": {
+			"method": "GET",
+			"path": "/api/v1/polyIntersect/wdpa"
 		}
 	}]
 }
-

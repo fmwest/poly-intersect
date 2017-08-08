@@ -1,0 +1,1 @@
+@endpoints.route('/ENDPOINT_NAME',\ strict_slashes=False,\ methods=['GET',\ 'POST'])\ndef\ FUNCTION_NAME():\n\tdata\ =\ dict(name='hello\ ENDPOINT_NAME')\n\treturn\ jsonify(data)\n\n
