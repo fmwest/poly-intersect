@@ -54,17 +54,12 @@ def compute(graph, outputs):
     return final_output
 
 
-def execute_model():
+def execute_model(analysis, dataset, user_json, unit):
     # read config files
     with open(path.join(path.dirname(__file__), 'analyses.json')) as f:
         analyses = json.load(f)
     with open(path.join(path.dirname(__file__), 'datasets.json')) as f:
         datasets = json.load(f)
-
-    # read user input
-    analysis = str(request.json['analysis'])
-    dataset = str(request.json['dataset'])
-    user_json = str(request.json['user_json'])
 
     # get category for dataset
     category = datasets[dataset]['category']
@@ -81,20 +76,16 @@ def execute_model():
 
     # get graph and populate with parameters
     graph = analyses[analysis]['graph']
-    if dataset not in analyses[analysis]['datasets']:
-        raise ValueError('dataset must be one of the following: \
-            {}'.format(analyses[analysis]['datasets']))
     for key, vals in graph.items():
         vals = [val.format(user_json=user_json,
                            layer_url=layer_url,
-                           category=category) for val in vals]
+                           category=category,
+                           unit=unit) for val in vals]
         graph[key] = vals
+    outputs = analyses[analysis]['outputs']
 
     # create and compute graph
-    assert isinstance(graph, dict)
-    assert isinstance(json.dumps(graph), str)
     dag = create_dag_from_json(json.dumps(graph))
-    outputs = ['intersect-area-percent', 'intersect-area']
     data = compute(dag, outputs)
     response = jsonify(data)
     response.status_code = 200

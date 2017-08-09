@@ -10,13 +10,16 @@ import pyproj
 import numpy as np
 from scipy import stats
 
-from shapely.geometry import Polygon, shape, mapping
+from shapely.geometry import shape, mapping
+from shapely.geometry.polygon import Polygon
+from shapely.geometry.multipolygon import MultiPolygon
 from shapely.ops import unary_union, transform
 
 
-__all__ = ['json2ogr', 'ogr2json', 'dissolve', 'intersect', 'buffer_to_dist',
-           'get_aoi_area', 'get_intersect_area', 'get_intersect_area_percent',
-           'get_intersect_count', 'esri_server2ogr']
+__all__ = ['json2ogr', 'ogr2json', 'dissolve', 'intersect', 'project_local',
+           'buffer_to_dist', 'get_aoi_area', 'get_intersect_area',
+           'get_intersect_area_percent', 'get_intersect_count',
+           'esri_server2ogr']
 
 
 def json2ogr(in_json):
@@ -194,14 +197,18 @@ def project_local(featureset):
     Transform geometry with a local projection centered at the
     shape's centroid
     '''
-    if featureset['crs']['properties']['name'] == 'urn:ogc:def:uom:EPSG::9102':
-        raise ValueError('geometries have already been projected with the \
-                          World Azimuthal Equidistant coordinate system')
+    if ('crs' in featureset.keys() and
+            featureset['crs']['properties']['name'] ==
+            'urn:ogc:def:uom:EPSG::9102'):
+        return featureset
 
     new_features = []
 
     for f in featureset['features']:
-        geom = Polygon(f['geometry'])
+        if isinstance(f['geometry'], Polygon):
+            geom = Polygon(f['geometry'])
+        elif isinstance(f['geometry'], MultiPolygon):
+            geom = MultiPolygon([f['geometry']])
         proj4 = '+proj=aeqd +lat_0={} +lon_0={} +x_0=0 +y_0=0 +datum=WGS84 \
                  +units=m +no_defs '.format(geom.centroid.y, geom.centroid.x)
         project = partial(pyproj.transform,
@@ -268,7 +275,8 @@ def validate_featureset(featureset, field=None):
     return True
 
 
-def get_intersect_area(featureset, intersection, category=None):
+def get_intersect_area(featureset, intersection, unit='hectare',
+                       category=None):
     '''
     Calculate the area overlap of an intersection with the user AOI. Can
     calculate areas by category using a groupby field.
@@ -280,8 +288,12 @@ def get_intersect_area(featureset, intersection, category=None):
     if not validate_featureset(intersection, category):
         return 0
 
+    unit_conversions = {'meter': 1, 'kilometer': 1000, 'hectare': 10000}
+    if not unit in unit_conversions.keys():
+        raise ValueError('Invalid unit')
+
     for f in intersection['features']:
-        f['properties']['area'] = f['geometry'].area
+        f['properties']['area'] = f['geometry'].area / unit_conversions[unit]
 
     if category:
         area_overlap = {f['properties'][category]: f['properties']['area']
