@@ -10,31 +10,30 @@ def test_hello():
 
 
 def test_fiona():
-    url = 'http://localhost:9000/v1/polyIntersect/idn-legal-classifications'
+    url = 'http://localhost:9000/v1/polyIntersect/plantation-species'
     result = requests.get(url)
     print(result)
 
 
 def test_brazil_biomes_local():
-    url = 'http://localhost:5700/api/v1/polyIntersect/generic'
+    url = 'http://localhost:5700/api/v1/polyIntersect/plantation-species'
     run_request(url)
 
 
 def test_brazil_biomes_control_tower():
-    url = 'http://localhost:9000/v1/polyIntersect/generic'
+    url = 'http://localhost:9000/v1/polyIntersect/plantation-species'
     run_request(url)
 
 
 def test_brazil_biomes_control_tower_remote():
-    url = 'http://staging-api.globalforestwatch.org/v1/polyIntersect/generic'
+    url = 'http://staging-api.globalforestwatch.org/v1/polyIntersect/plantation-species'
     run_request(url)
 
 
 def run_request(url):
     payload = {}
-    payload['analysis'] = 'area-percentarea'
-    payload['dataset'] = 'ifl'
     payload['user_json'] = INDONESIA_USER_POLY
+    payload['unit'] = 'hectare'
 
     print(url)
 
@@ -46,8 +45,8 @@ def run_request(url):
 
 
 if __name__ == '__main__':
-    # test_hello()
-    test_fiona()
-    # test_brazil_biomes_local()
-    # test_brazil_biomes_control_tower()
+    test_hello()
+    # test_fiona()
+    test_brazil_biomes_local()
+    test_brazil_biomes_control_tower()
     # test_brazil_biomes_control_tower_remote()
