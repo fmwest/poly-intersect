@@ -4,36 +4,36 @@
 			"aoi": ["geojson", "{user_json}"],
 	        "reference_data": ["esri:server", "{layer_url}", "{user_json}"],
 	        "dissolve-aoi": ["dissolve", "aoi"],
-	        "intersect-aoi-dataset": ["intersect", "dissolve-aoi",
-	                                  "reference_data"],
-
-	        "intersect-area": ["get_intersect_area", "dissolve-aoi",
-	                           "intersect-aoi-dataset", "{category}"],
+	        "project-aoi": ["project_local", "dissolve-aoi"],
+	        "project-data": ["project_local", "reference_data"],
+	        "intersect-aoi-data": ["intersect", "project-aoi",
+	                                  "project-data"],
+	        "intersect-area": ["get_intersect_area", "project-aoi",
+	                           "intersect-aoi-data", "{unit}",
+	                       	   "{category}"],
 	        "intersect-area-percent": ["get_intersect_area_percent",
-	                                   "dissolve-aoi",
-	                                   "intersect-aoi-dataset",
+	                                   "project-aoi",
+	                                   "intersect-aoi-data",
 	                                   "{category}"]
 		},
-		"datasets": ["brazil-biomes", "global-land-cover", "idn-land-cover",
-			"sea-land-cover", "idn-legal-classifications", "wdpa"]
+		"outputs": ["intersect-area", "intersect-area-percent"]
 	},
 	"area-percentarea": {
 		"graph": {
 			"aoi": ["geojson", "{user_json}"],
 	        "reference_data": ["esri:server", "{layer_url}", "{user_json}"],
 	        "dissolve-aoi": ["dissolve", "aoi"],
-	        "dissolve-dataset": ["dissolve", "reference_data"],
-	        "intersect-aoi-dataset": ["intersect", "dissolve-aoi",
-	                                  "dissolve-dataset"],
-
-	        "intersect-area": ["get_intersect_area", "dissolve-aoi",
-	                           "intersect-aoi-dataset"],
+	        "dissolve-data": ["dissolve", "reference_data"],
+	        "project-aoi": ["project_local", "dissolve-aoi"],
+	        "project-data": ["project_local", "dissolve-data"],
+	        "intersect-aoi-data": ["intersect", "project-aoi",
+	                                  "project-data"],
+	        "intersect-area": ["get_intersect_area", "project-aoi",
+	                           "intersect-aoi-data", "{unit}"],
 	        "intersect-area-percent": ["get_intersect_area_percent",
-	                                   "dissolve-aoi",
-	                                   "intersect-aoi-dataset"]
+	                                   "project-aoi",
+	                                   "intersect-aoi-data"]
 		},
-		"datasets": ["plantation-species", "primary-forest",
-			"idn-primary-forest", "wdpa", "land-rights", "aze",
-			"tree-cover-extent", "ifl", "peat"]
+		"outputs": ["intersect-area", "intersect-area-percent"]
 	}
 }
