@@ -289,7 +289,7 @@ def get_intersect_area(featureset, intersection, unit='hectare',
         return 0
 
     unit_conversions = {'meter': 1, 'kilometer': 1000, 'hectare': 10000}
-    if not unit in unit_conversions.keys():
+    if unit not in unit_conversions.keys():
         raise ValueError('Invalid unit')
 
     for f in intersection['features']:

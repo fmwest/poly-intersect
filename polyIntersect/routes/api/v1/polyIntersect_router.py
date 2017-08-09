@@ -96,3 +96,10 @@ def execute_model(analysis, dataset, user_json, unit):
 def hello():
     data = dict(name='hello adnan')
     return jsonify(data)
+
+
+@endpoints.route('/hello-post', strict_slashes=False, methods=['POST'])
+def hellopost():
+    user_str = request.json['name']
+    data = dict(name='hello {}'.format(user_str))
+    return jsonify(data)
