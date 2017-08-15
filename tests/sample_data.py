@@ -61,3 +61,6 @@ with open(path.join(fixtures, 'indonesia_user_poly.geojson')) as f:
 
 with open(path.join(fixtures, 'intersect_multiple_features.geojson')) as f:
     INTERSECT_MULTIPLE_FEATURES = "".join(f.read().split())
+
+with open(path.join(fixtures, 'AZE_test.geojson')) as f:
+    AZE_TEST = "".join(f.read().split())
