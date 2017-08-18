@@ -1,42 +1,47 @@
 {
 	"brazil-biomes": {
-		"id": "e0c60253-5162-46b9-b8f4-ded9e664b9fc",
-		"category": "name"
+		"id": "5de0f800-87c8-44b1-8927-724de89bfba5",
+		"category": "name",
+		"field": ""
 	},
 	"global-land-cover": {
 		"id": "",
-		"category": ""
+		"category": "",
+		"field": ""
 	},
 	"idn-legal-classifications": {
 		"id": "01522484-3f83-4b6d-872b-03917eae82e3",
-		"category": "lc_general"
+		"category": "lc_general",
+		"field": ""
 	},
 	"wdpa": {
-		"id": "",
-		"category": ""
+		"id": "9e354df2-073e-45a9-b81d-71a209781cbc",
+		"category": "",
+		"field": ""
 	},
 	"plantation-species": {
 		"id": "9a8f7e55-9ec7-4be2-b7c5-3e0864ed4e54",
-		"category": "spec_simp"
+		"category": "spec_simp",
+		"field": ""
 	},
 	"land-rights": {
-		"id": "c8c69e3e-e75c-4ba9-8348-dd0787a9306b",
-		"category": ""
+		"id": "984b1612-8f53-46a8-8c34-a760412bc205", 
+		"category": "",
+		"field": ""
 	},
 	"aze": {
-		"id": "",
-		"category": ""
-	},
-	"tree-cover-extent": {
-		"id": "",
-		"category": ""
+		"id": "e90c0d5e-33b1-445b-9073-c211ecc78035",
+		"category": "sitename_1",
+		"field": "species"
 	},
 	"ifl": {
 		"id": "1698b626-176f-4822-aa54-31f22acba136",
-		"category": ""
+		"category": "",
+		"field": ""
 	},
 	"peat": {
 		"id": "4c6b1dcf-7b7e-43c1-9022-be4efc895b39",
-		"category": ""
+		"category": "",
+		"field": ""
 	}
 }

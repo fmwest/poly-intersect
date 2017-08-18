@@ -8,13 +8,5 @@
 			"method": "GET",
 			"path": "/api/v1/polyIntersect/hello"
 		}
-	},
-	{
-		"path": "/v1/polyIntersect/hello-post",
-		"method": "POST",
-		"redirect": {
-			"method": "POST",
-			"path": "/api/v1/polyIntersect/hello-post"
-		}
 	}]
 }
