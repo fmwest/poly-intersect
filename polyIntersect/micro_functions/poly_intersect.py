@@ -4,6 +4,8 @@ import json
 import itertools
 import rtree
 import requests
+from parse import search
+from geomet import wkt
 
 from functools import partial, lru_cache
 import pyproj
@@ -13,13 +15,14 @@ from scipy import stats
 from shapely.geometry import shape, mapping
 from shapely.geometry.polygon import Polygon
 from shapely.geometry.multipolygon import MultiPolygon
+from shapely.geometry.collection import GeometryCollection
 from shapely.ops import unary_union, transform
 
 
-__all__ = ['json2ogr', 'ogr2json', 'dissolve', 'intersect', 'project_local',
+__all__ = ['json2ogr', 'ogr2json', 'dissolve', 'intersect', 'project_features',
            'buffer_to_dist', 'get_aoi_area', 'get_intersect_area',
-           'get_intersect_area_percent', 'get_intersect_count',
-           'esri_server2ogr']
+           'get_intersect_area_percent', 'esri_server2ogr',
+           'get_intersect_species']
 
 
 def json2ogr(in_json):
@@ -36,6 +39,21 @@ def json2ogr(in_json):
     if 'features' not in in_json.keys():
         raise ValueError('input json must contain features property')
 
+    # why does peat keep returning m and z values??? maybe use carto version
+    test = in_json['features'][0]['geometry']
+    if (test['type'] == 'Polygon' and len(test['coordinates'][0][0]) > 2 or
+            test['type'] == 'MultiPolygon' and
+            len(test['coordinates'][0][0][0]) > 2):
+        for f in in_json['features']:
+            coords = f['geometry']['coordinates']
+            if test['type'] == 'Polygon':
+                f['geometry']['coordinates'] = [[coord[:2] for coord in ring]
+                                                for ring in coords]
+            elif test['type'] == 'MultiPolygon':
+                f['geometry']['coordinates'] = [[[coord[:2] for coord in ring]
+                                                for ring in poly]
+                                                for poly in coords]
+
     for f in in_json['features']:
         f['geometry'] = shape(f['geometry'])
 
@@ -46,10 +64,11 @@ def ogr2json(featureset):
     '''
     Convert GDAL geometry to geojson object
     '''
+
     for f in featureset['features']:
         f['geometry'] = mapping(f['geometry'])
 
-    return featureset
+    return json.dumps(featureset)
 
 
 def explode(coords):
@@ -69,57 +88,97 @@ def explode(coords):
 
 def bbox(f):
     x, y = zip(*list(explode(f['geometry']['coordinates'])))
-    return min(x), min(y), max(x), max(y)
-
-
-def getEnvelope(user_json):
-    envelope = {}
-    for f in user_json['features']:
-        x1, y1, x2, y2 = bbox(f)
-        if envelope:
-            if x1 < envelope['xmin']:
-                envelope['xmin'] = x1
-            if y1 < envelope['ymin']:
-                envelope['ymin'] = y1
-            if x2 > envelope['xmax']:
-                envelope['xmax'] = x2
-            if y2 > envelope['ymax']:
-                envelope['ymax'] = y2
-        else:
-            envelope['xmin'] = x1
-            envelope['ymin'] = y1
-            envelope['xmax'] = x2
-            envelope['ymax'] = y2
-    envelope["spatialReference"] = {"wkid": 4326}
-    return envelope
+    x1, x2, y1, y2 = min(x), max(x), min(y), max(y)
+    return [[[x1, y1],
+             [x2, y1],
+             [x2, y2],
+             [x1, y2],
+             [x1, y1]]]
 
 
 @lru_cache(5)
-def esri_server2ogr(layer_endpoint, aoi, where='1=1',
-                    out_fields='*', return_geometry=True,
-                    token=None):
+def esri_server2ogr(layer_endpoint, aoi, out_fields):
 
     url = layer_endpoint.replace('?f=pjson', '') + '/query'
 
     params = {}
-    params['where'] = where
+    params['where'] = '1=1'
+    if 'objectid' not in out_fields:
+        out_fields = 'objectid,' + out_fields if out_fields else 'objectid'
     params['outFields'] = out_fields
-    params['returnGeometry'] = return_geometry
-    params['token'] = token
+    params['returnGeometry'] = True
+    params['returnM'] = False
+    params['returnZ'] = False
     params['f'] = 'geojson'
-    params['geometry'] = str(getEnvelope(json.loads(aoi)))
-    params['geometryType'] = 'esriGeometryEnvelope'
-    params['spatialRel'] = 'esriSpatialRelEnvelopeIntersects'
+    params['geometryType'] = 'esriGeometryPolygon'
+    params['spatialRel'] = 'esriSpatialRelIntersects'
+    # params['geometry'] = str({'rings': bbox(json.loads(aoi)['features'][0]),
+    #                           'spatialReference': {'wkid': 4326}})
 
-    req = requests.post(url, data=params)
+    # iterate through aoi features (Esri does not accept multipart polygons
+    # as a spatial filter, and the aoi features may be too far apart to combine
+    # into one bounding box)
+    featureset = {}
+    objectids = []
+    for f in json.loads(aoi)['features']:
+        params['geometry'] = str({'rings': bbox(f),
+                                  'spatialReference': {'wkid': 4326}})
+        req = requests.post(url, data=params)
+        req.raise_for_status()
+        response = json2ogr(req.text)
+
+        # append response to full dataset, except features already included
+        if featureset:
+            for h in response['features']:
+                if h['properties']['objectid'] not in objectids:
+                    featureset['features'].append(h)
+                    objectids.append(h['properties']['objectid'])
+        else:
+            featureset = response
+
+    return featureset
+
+    # req = requests.post(url, data=params)
+    # req.raise_for_status()
+
+    # return json2ogr(req.text)
+
+
+@lru_cache(5)
+def cartodb2ogr(service_endpoint, aoi, out_fields=''):
+    endpoint_template = 'https://{}.carto.com/tables/{}/'
+    username, table = search(endpoint_template, service_endpoint + '/')
+    url = 'https://{username}.carto.com/api/v2/sql'.format(username=username)
+
+    params = {}
+    fields = ['ST_AsGeoJSON(the_geom) as geometry']
+    out_fields = out_fields.split(',')
+    for field in out_fields:
+        if field:
+            fields.append('{field} as {field}'.format(field=field))
+
+    where = "ST_Intersects(ST_GeomFromText('{wkt}',4326),the_geom)"
+    where = where.format(wkt=wkt.dumps({
+        'type': 'MultiPolygon',
+        'coordinates': [bbox(f) for f in json.loads(aoi)['features']]
+    }))
+
+    q = 'SELECT {fields} FROM {table} WHERE {where}'
+    params = {'q': q.format(fields=','.join(fields), table=table, where=where)}
+
+    req = requests.get(url, params=params)
     req.raise_for_status()
 
-    # TODO: remove extra json parse here....
-    return json2ogr(req.text)
-
-
-def cartodb2ogr(service_endpoint):
-    pass
+    response = json.loads(req.text)['rows']
+    features = {
+        'type': 'FeatureCollection',
+        'features': [{
+            'type': 'Feature',
+            'geometry': json.loads(feat['geometry']),
+            'properties': {field: feat[field] for field in out_fields if field}
+        } for feat in response]
+    }
+    return json2ogr(features)
 
 
 def dissolve(featureset, field=None):
@@ -147,7 +206,8 @@ def dissolve(featureset, field=None):
     else:
         geom = [f['geometry'] for f in featureset['features']]
         properties = {}  # TODO: decide which attributes should go in here
-        new_features.append({'geometry': unary_union(geom),
+        new_features.append({'type': 'Feature',
+                             'geometry': unary_union(geom),
                              'properties': properties})
 
     new_featureset = dict(type=featureset['type'],
@@ -163,7 +223,14 @@ def index_featureset(featureset):
     index = rtree.index.Index()
     for i, f in enumerate(featureset['features']):
         geom = f['geometry']
-        index.insert(i, geom.bounds)
+        if isinstance(geom, GeometryCollection):
+            minx = np.min([item.bounds[0] for item in geom])
+            miny = np.min([item.bounds[1] for item in geom])
+            maxx = np.max([item.bounds[2] for item in geom])
+            maxy = np.max([item.bounds[3] for item in geom])
+            index.insert(i, (minx, miny, maxx, maxy))
+        else:
+            index.insert(i, geom.bounds)
     return index
 
 
@@ -175,24 +242,28 @@ def intersect(featureset1, featureset2):
     new_features = []
 
     for f in featureset1['features']:
+        feat1 = f
         geom1 = f['geometry']
         for fid in list(index.intersection(geom1.bounds)):
             feat2 = featureset2['features'][fid]
             geom2 = feat2['geometry']
             if geom1.intersects(geom2):  # TODO: optimize to on intersect call?
                 new_geom = geom1.intersection(geom2)
-                new_feat = dict(properties=feat2['properties'],
-                                geometry=new_geom)
+                new_feat = dict(properties={**feat2['properties'],
+                                            **feat1['properties']},
+                                geometry=new_geom,
+                                type='Feature')
                 new_features.append(new_feat)
 
     new_featureset = dict(type=featureset2['type'],
                           features=new_features)
     if 'crs' in featureset2.keys():
         new_featureset['crs'] = featureset2['crs']
+
     return new_featureset
 
 
-def project_local(featureset):
+def project_features(featureset, local=True):
     '''
     Transform geometry with a local projection centered at the
     shape's centroid
@@ -203,25 +274,40 @@ def project_local(featureset):
         return featureset
 
     new_features = []
+    name = 'urn:ogc:def:uom:EPSG::9102' if local else 'EPSG:4326'
 
     for f in featureset['features']:
         if isinstance(f['geometry'], Polygon):
             geom = Polygon(f['geometry'])
+            x, y = geom.centroid.x, geom.centroid.y
         elif isinstance(f['geometry'], MultiPolygon):
-            geom = MultiPolygon([f['geometry']])
+            geom = MultiPolygon(f['geometry'])
+            x, y = geom.centroid.x, geom.centroid.y
+        elif isinstance(f['geometry'], GeometryCollection):
+            geom = GeometryCollection(f['geometry'])
+            x = np.mean([geom_item.centroid.x for geom_item in geom])
+            y = np.mean([geom_item.centroid.y for geom_item in geom])
+        else:
+            raise ValueError(type(f['geometry']))
         proj4 = '+proj=aeqd +lat_0={} +lon_0={} +x_0=0 +y_0=0 +datum=WGS84 \
-                 +units=m +no_defs '.format(geom.centroid.y, geom.centroid.x)
-        project = partial(pyproj.transform,
-                          pyproj.Proj(init='epsg:4326'),
-                          pyproj.Proj(proj4))
+                 +units=m +no_defs '.format(y, x)
+        if local:
+            project = partial(pyproj.transform,
+                              pyproj.Proj(init='epsg:4326'),
+                              pyproj.Proj(proj4))
+        else:
+            project = partial(pyproj.transform,
+                              pyproj.Proj(proj4),
+                              pyproj.Proj(init='epsg:4326'))
         projected_geom = transform(project, geom)
         new_feat = dict(properties=f['properties'],
-                        geometry=projected_geom)
+                        geometry=projected_geom,
+                        type='Feature')
         new_features.append(new_feat)
 
     return dict(type=featureset['type'],
                 crs=dict(type='name',
-                         properties=dict(name='urn:ogc:def:uom:EPSG::9102')),
+                         properties=dict(name=name)),
                 features=new_features)
 
 
@@ -231,8 +317,8 @@ def buffer_to_dist(featureset, distance):
     '''
     if not (featureset['crs']['properties']['name'] ==
             'urn:ogc:def:uom:EPSG::9102'):
-        raise ValueError('geometries must be projected with the World \
-                          Azimuthal Equidistant coordinate system')
+        raise ValueError('geometries must be projected with the World ' +
+                         'Azimuthal Equidistant coordinate system')
 
     new_features = []
 
@@ -240,7 +326,8 @@ def buffer_to_dist(featureset, distance):
         geom = f['geometry']
         buffered_geom = geom.buffer(distance * 1000.0)
         new_feat = dict(properties=f['properties'],
-                        geometry=buffered_geom)
+                        geometry=buffered_geom,
+                        type='Feature')
         new_features.append(new_feat)
 
     new_featureset = dict(type=featureset['type'],
@@ -253,8 +340,6 @@ def buffer_to_dist(featureset, distance):
 # ------------------------- Calculation Functions --------------------------
 
 def get_aoi_area(featureset):
-    if len(featureset['features']) > 1:
-        raise ValueError('AOI must be dissolved to a single feature')
     return np.sum([f['geometry'].area for f in featureset['features']])
 
 
@@ -275,8 +360,7 @@ def validate_featureset(featureset, field=None):
     return True
 
 
-def get_intersect_area(featureset, intersection, unit='hectare',
-                       category=None):
+def get_intersect_area(intersection, intersection_proj, unit='hectare'):
     '''
     Calculate the area overlap of an intersection with the user AOI. Can
     calculate areas by category using a groupby field.
@@ -285,27 +369,28 @@ def get_intersect_area(featureset, intersection, unit='hectare',
     value in the category field. If not, there must be one feature total in
     the intersected featureset
     '''
-    if not validate_featureset(intersection, category):
-        return 0
+    # if not validate_featureset(intersection, category):
+    #     return 0
 
     unit_conversions = {'meter': 1, 'kilometer': 1000, 'hectare': 10000}
     if unit not in unit_conversions.keys():
         raise ValueError('Invalid unit')
 
-    for f in intersection['features']:
-        f['properties']['area'] = f['geometry'].area / unit_conversions[unit]
+    for f, p in zip(intersection['features'], intersection_proj['features']):
+        f['properties']['area'] = p['geometry'].area / unit_conversions[unit]
+    return 'TESTING'
 
-    if category:
-        area_overlap = {f['properties'][category]: f['properties']['area']
-                        for f in intersection['features']}
-    else:
-        f = intersection['features'][0]
-        area_overlap = f['properties']['area']
+    # if category:
+    #     area_overlap = {f['properties'][category]: f['properties']['area']
+    #                     for f in intersection['features']}
+    # else:
+    #     f = intersection['features'][0]
+    #     area_overlap = f['properties']['area']
 
-    return area_overlap
+    # return area_overlap
 
 
-def get_intersect_area_percent(featureset, intersection, category=None):
+def get_intersect_area_percent(intersection, intersection_proj, aoi_proj):
     '''
     Calculate the area overlap of an intersection with the user AOI. Can
     calculate areas by category using a groupby field.
@@ -314,30 +399,37 @@ def get_intersect_area_percent(featureset, intersection, category=None):
     value in the category field. If not, there must be one feature total in
     the intersected featureset
     '''
-    if not validate_featureset(intersection, category):
-        return 0
+    # if not validate_featureset(intersection, category):
+    #     return 0
 
-    aoi_area = get_aoi_area(featureset)
+    for f, p in zip(intersection['features'], intersection_proj['features']):
+        i = f['properties']['id']
+        aoi_area = aoi_proj['features'][i]['geometry'].area
+        f['properties']['area-percent'] = p['geometry'].area * 100. / aoi_area
+    return 'TESTING'
+
+    # if category:
+    #     pct_overlap = {f['properties'][category]:
+    #                    f['properties']['area_percent']
+    #                    for f in intersection['features']}
+    # else:
+    #     f = intersection['features'][0]
+    #     pct_overlap = f['properties']['area_percent']
+
+    # return pct_overlap
+
+
+def get_intersect_species(intersection, field):
+    '''
+    Count number of unique species found within the features of an
+    intersection with the user AOI
+    '''
+    species_list = []
     for f in intersection['features']:
-        f['properties']['area_percent'] = f['geometry'].area * 100. / aoi_area
-
-    if category:
-        pct_overlap = {f['properties'][category]:
-                       f['properties']['area_percent']
-                       for f in intersection['features']}
-    else:
-        f = intersection['features'][0]
-        pct_overlap = f['properties']['area_percent']
-
-    return pct_overlap
-
-
-def get_intersect_count(intersection, field):
-    '''
-    Count numerical attribute from features of an intersection with the
-    user AOI
-    '''
-    return np.sum([f['properties'][field] for f in intersection['features']])
+        species_string = f['properties'][field][1:-1].replace('"', '')
+        species_list += species_string.split(',')
+    species_set = set(species_list)
+    return len(species_set)
 
 
 def get_intersect_z_scores(intersection, category, field):
@@ -345,15 +437,15 @@ def get_intersect_z_scores(intersection, category, field):
     Get z score of numerical attribute from features of an intersection with
     the user AOI
     '''
-    if not validate_featureset(intersection, category):
-        return 0
+    # if not validate_featureset(intersection, category):
+    #     return 0
 
     scores = stats.zscore([f['properties'][field]
                            for f in intersection['features']])
     for i, f in enumerate(intersection['features']):
         f['properties']['z-score'] = scores[i]
-    return {f['properties'][category]: f['properties']['z-score']
-            for f in intersection['features']}
+    # return {f['properties'][category]: f['properties']['z-score']
+    #         for f in intersection['features']}
 
 
 def is_valid(analysis_method):

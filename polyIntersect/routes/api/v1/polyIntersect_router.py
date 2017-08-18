@@ -21,7 +21,8 @@ def create_dag_from_json(graphJson):
             raise ValueError(('graph values must be lists'
                               '[<func_name>, <func_arg1>, <func_arg2>]'))
 
-        special_funcs = ['geojson', 'esri:server', 'gfw:pro']
+        # special_funcs = ['geojson', 'esri:server', 'gfw:pro']
+        special_funcs = ['geojson', 'esri:server', 'cartodb']
 
         func_name = v[0]
         is_valid = analysis_funcs.is_valid(func_name)
@@ -30,6 +31,9 @@ def create_dag_from_json(graphJson):
             raise ValueError('invalid function: {}'.format(func_name))
 
         func_args = v[1:] if len(v) else []
+        for arg in func_args:
+            if not isinstance(arg, str):
+                raise ValueError('graph function arguments must be strings')
 
         if func_name == 'geojson':
             graph[k] = tuple([analysis_funcs.json2ogr] + func_args)
@@ -55,6 +59,14 @@ def compute(graph, outputs):
 
 
 def execute_model(analysis, dataset, user_json, unit):
+    # validate user json and add unique id
+    if isinstance(user_json, str):
+        user_json = json.loads(user_json)
+    if user_json['type'] != 'FeatureCollection':
+        raise ValueError('User json must be a feature collection')
+    for i in range(len(user_json['features'])):
+        user_json['features'][i]['properties']['id'] = i
+
     # read config files
     with open(path.join(path.dirname(__file__), 'analyses.json')) as f:
         analyses = json.load(f)
@@ -63,23 +75,41 @@ def execute_model(analysis, dataset, user_json, unit):
 
     # get category for dataset
     category = datasets[dataset]['category']
+    field = datasets[dataset]['field']
+    out_fields = ','.join([f for f in [category, field] if f])
 
     # get gfw api url for dataset based on its id
     dataset_id = datasets[dataset]['id']
-    host = 'https://staging-api.globalforestwatch.org'
+    host = 'https://staging-api.globalforestwatch.org/v1'
     dataset_endpoint = 'dataset/{}'.format(dataset_id)
     dataset_url = path.join(host, dataset_endpoint)
 
     # query gfw api for the layer url
-    dataset_info = requests.get(dataset_url).json()
+    try:
+        dataset_info = requests.get(dataset_url).json()
+    except:
+        raise ValueError(requests.get(dataset_url).text)
+    if 'errors' in dataset_info.keys():
+        raise ValueError(dataset_info['errors'])
     layer_url = dataset_info['data']['attributes']['connectorUrl']
+    if '?' in layer_url:
+        layer_url = layer_url[:layer_url.find('?')]
+    if dataset_info['data']['attributes']['provider'] == 'featureservice':
+        gfw_dataset = 'esri:server'
+    elif dataset_info['data']['attributes']['provider'] == 'cartodb':
+        gfw_dataset = 'cartodb'
+    else:
+        raise ValueError('GFW dataset endpoint not supported')
 
     # get graph and populate with parameters
     graph = analyses[analysis]['graph']
     for key, vals in graph.items():
-        vals = [val.format(user_json=user_json,
+        vals = [val.format(user_json=json.dumps(user_json),
+                           gfw_dataset=gfw_dataset,
+                           out_fields=out_fields,
                            layer_url=layer_url,
                            category=category,
+                           field=field,
                            unit=unit) for val in vals]
         graph[key] = vals
     outputs = analyses[analysis]['outputs']
@@ -94,12 +124,6 @@ def execute_model(analysis, dataset, user_json, unit):
 
 @endpoints.route('/hello', strict_slashes=False, methods=['GET', 'POST'])
 def hello():
+    request.json
     data = dict(name='hello adnan')
-    return jsonify(data)
-
-
-@endpoints.route('/hello-post', strict_slashes=False, methods=['POST'])
-def hellopost():
-    user_str = request.json['name']
-    data = dict(name='hello {}'.format(user_str))
     return jsonify(data)
