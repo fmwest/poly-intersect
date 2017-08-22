@@ -26,17 +26,12 @@ app.register_blueprint(endpoints, url_prefix='/api/v1/polyIntersect')
 info = load_config_json('register')
 swagger = load_config_json('swagger')
 
-if os.getenv('ENVIRONMENT') == 'dev':
-    mode = CTRegisterMicroserviceFlask.AUTOREGISTER_MODE
-else:
-    mode = CTRegisterMicroserviceFlask.NORMAL_MODE
-
 CTRegisterMicroserviceFlask.register(
     app=app,
     name='poly_intersect',
     info=info,
     swagger=swagger,
-    mode=mode,
+    mode=CTRegisterMicroserviceFlask.AUTOREGISTER_MODE if os.getenv('CT_REGISTER_MODE') and os.getenv('CT_REGISTER_MODE') == 'auto' else CTRegisterMicroserviceFlask.NORMAL_MODE,
     ct_url=os.getenv('CT_URL'),
     url=os.getenv('LOCAL_URL')
 )
