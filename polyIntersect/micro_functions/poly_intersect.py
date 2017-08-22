@@ -384,9 +384,10 @@ def get_intersect_area(intersection, intersection_proj, unit='hectare'):
         new_feat = dict(type='Feature',
                         geometry=f['geometry'],
                         properties=f['properties'])
-        new_feat['properties']['area'] = p['geometry'].area / unit_conversions[unit]
+        new_feat['properties']['area'] = (p['geometry'].area /
+                                          unit_conversions[unit])
         new_features.append(new_feat)
-    
+
     new_featureset = dict(type=intersection['type'],
                           features=new_features)
     if 'crs' in intersection.keys():
@@ -420,9 +421,10 @@ def get_intersect_area_percent(intersection, intersection_proj, aoi_proj):
                         properties=f['properties'])
         i = f['properties']['id'] if 'id' in f['properties'].keys() else 0
         aoi_area = aoi_proj['features'][i]['geometry'].area
-        new_feat['properties']['area-percent'] = p['geometry'].area * 100. / aoi_area
+        new_feat['properties']['area-percent'] = (p['geometry'].area * 100. /
+                                                  aoi_area)
         new_features.append(new_feat)
-    
+
     new_featureset = dict(type=intersection['type'],
                           features=new_features)
     if 'crs' in intersection.keys():
