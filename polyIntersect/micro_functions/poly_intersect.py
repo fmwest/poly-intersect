@@ -1,5 +1,3 @@
-import polyIntersect.micro_functions.utils as u
-
 import json
 import itertools
 import rtree
@@ -42,7 +40,8 @@ def json2ogr(in_json):
     # why does peat keep returning m and z values??? maybe use carto version
     if len(in_json['features']) > 0:
         test = in_json['features'][0]['geometry']
-        if ((test['type'] == 'Polygon' and len(test['coordinates'][0][0])) > 2 or
+        if ((test['type'] == 'Polygon' and
+             len(test['coordinates'][0][0])) > 2 or
                 (test['type'] == 'MultiPolygon' and
                  len(test['coordinates'][0][0][0]) > 2)):
             for f in in_json['features']:
