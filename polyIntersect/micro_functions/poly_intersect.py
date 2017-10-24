@@ -22,22 +22,10 @@ __all__ = ['json2ogr', 'ogr2json', 'dissolve', 'intersect', 'project_local',
            'project_global', 'buffer_to_dist', 'get_area', 'get_area_percent',
            'esri_server2ogr', 'get_species_count', 'esri_server2histo',
            'esri_count_groupby', 'cartodb2ogr', 'esri_count_30days',
-           'esri_last_instance', 'erase', 'test']
+           'esri_last_instance', 'erase']
 
 HA_CONVERSION = 10000
 t0 = 0
-
-
-def test(featureset, msg):
-    for i, f in enumerate(featureset['features']):
-        if isinstance(f['geometry'], dict):
-            raise ValueError((i, 'geometry is geojson', msg))
-        try:
-            f['geometry'].bounds
-        except:
-            raise ValueError((i, 'geometry doesnt have bounds', msg))
-    raise ValueError('everything good: {}'.format(msg))
-    return 1
 
 
 def json2ogr(in_json):
