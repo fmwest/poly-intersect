@@ -10,6 +10,6 @@ def validate_greeting(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         if False:
-            return error(status=400, detail='Validating something in the middleware')
+            return error(status=400, detail='middleware validation failed')
         return func(*args, **kwargs)
     return wrapper

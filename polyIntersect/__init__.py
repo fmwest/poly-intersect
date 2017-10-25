@@ -1,18 +1,13 @@
-"""The API MODULE"""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
-import json
 import logging
 
 
 from flask import Flask
+
 from polyIntersect.config import SETTINGS
 from polyIntersect.routes.api.v1 import endpoints, error
 from polyIntersect.utils.files import load_config_json
+
 import CTRegisterMicroserviceFlask
 
 logging.basicConfig(
@@ -30,12 +25,16 @@ app.register_blueprint(endpoints, url_prefix='/api/v1/polyIntersect')
 # CT
 info = load_config_json('register')
 swagger = load_config_json('swagger')
+
 CTRegisterMicroserviceFlask.register(
     app=app,
     name='poly_intersect',
     info=info,
     swagger=swagger,
-    mode=CTRegisterMicroserviceFlask.AUTOREGISTER_MODE if os.getenv('ENVIRONMENT') == 'dev' else CTRegisterMicroserviceFlask.NORMAL_MODE,
+    mode=CTRegisterMicroserviceFlask.AUTOREGISTER_MODE if
+         os.getenv('CT_REGISTER_MODE') and
+         os.getenv('CT_REGISTER_MODE') == 'auto' else
+         CTRegisterMicroserviceFlask.NORMAL_MODE,
     ct_url=os.getenv('CT_URL'),
     url=os.getenv('LOCAL_URL')
 )
@@ -63,4 +62,4 @@ def gone(e):
 
 @app.errorhandler(500)
 def internal_server_error(e):
-    return error(status=500, detail='Internal Server Error')
+    return error(status=500, detail=str(e))

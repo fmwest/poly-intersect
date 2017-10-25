@@ -1,31 +1,12 @@
 {
 	"name": "#(service.name)",
 	"endpoints": [{
-		"path": "/v1/polyIntersect/hello",
+		"path": "/v1/polyIntersect/ANALYSIS_KEY/hello",
 		"method": "GET",
 		"binary": true,
 		"redirect": {
 			"method": "GET",
-			"path": "/api/v1/polyIntersect/hello"
-		}
-	},
-	{
-		"path": "/v1/polyIntersect",
-		"method": "POST",
-		"binary": true,
-		"redirect": {
-			"method": "POST",
-			"path": "/api/v1/polyIntersect"
-		}
-	},
-	{
-		"path": "/v1/polyIntersect/endpoint",
-		"method": "POST",
-		"binary": true,
-		"redirect": {
-			"method": "POST",
-			"path": "/api/v1/polyIntersect/endpoint"
+			"path": "/api/v1/polyIntersect/ANALYSIS_KEY/hello"
 		}
 	}]
 }
-

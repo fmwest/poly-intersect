@@ -1,0 +1,108 @@
+{
+	"brazil-biomes": {
+		"id": "d874c75e-ae0c-44d6-8554-ce4661471804",
+		"category": "name",
+		"field": ""
+	},
+	"idn-legal-classifications": {
+		"id": "da106d6a-86e3-43a1-b9af-f609c6b543d2",
+		"category": "lc_general",
+		"field": ""
+	},
+	"wdpa - NOT USED ATM": {
+		"id": "dbe7aa33-b908-4ce7-ac42-dde07f259044",
+		"category": "iucn_cat",
+		"field": "desig_eng"
+	},
+	"wdpa": {
+		"id": "64820260-7cb3-45a8-a6fb-f7e784e95cf4",
+		"category": "",
+		"field": ""
+	},
+	"plantations-by-species": {
+		"id": "2577898d-93ea-42ed-9e6d-9571632d3884",
+		"category": "spec_org",
+		"field": ""
+	},
+	"plantations-by-type": {
+		"id": "1ec7d5e9-0407-4a55-9a4a-73cf91a1762a",
+		"category": "spec_simp",
+		"field": "",
+		"where": "type_text = 'Large industrial plantation'"
+	},
+	"land-rights": {
+		"id": "ba38e1d9-d026-43b5-8944-23bd71473f56", 
+		"category": "",
+		"field": ""
+	},
+	"aze": {
+		"id": "6a276d13-a079-4ba4-9c1f-54936b458b33",
+		"category": "sitename_1",
+		"field": "species"
+	},
+	"ifl": {
+		"id": "79e15345-5c83-4d41-94b4-03f2b2018b77",
+		"category": "",
+		"field": ""
+	},
+	"peat - Esri, DO NOT USE keeps returning M and Z vals": {
+		"id": "1471aec4-4790-4634-bec0-4a497fd6e4e8",
+		"category": "",
+		"field": ""
+	},
+	"peat": {
+		"id": "2fe0f74a-9f91-43a3-98db-bed55a01077f",
+		"category": "",
+		"field": ""
+	},
+	"peat-pr": {
+		"id": "d6621f4c-e5e3-4f6c-81d7-6239401fc378",
+		"category": "",
+		"field": ""
+	},
+	"soy": {
+		"id": "473eeb03-0202-4808-b46d-34a2c7d070b4",
+		"category": "",
+		"field": ""
+	},
+	"modis": {
+		"id": "0e46253c-4977-4fab-86f3-cb58945de32d",
+		"category": "Year",
+		"field": ""
+	},
+	"viirs": {
+		"id": "702d69b8-e9af-4492-bb47-eacea31d7ccf",
+		"category": "Year,Month",
+		"field": "ACQ_DATE"
+	},
+	"plantations": {
+		"id": "f2d7db47-dc12-4a39-9514-1d5eb700c662",
+		"category": "",
+		"field": ""
+	},
+	"hnd-forest": {
+		"id": "f26e69a7-077f-4b49-871e-53363f72f9e9",
+		"category": "",
+		"field": ""
+	},
+	"afr-forest": {
+		"id": "f2fb1982-68c5-45b9-bcdc-7f80e94e2dc1",
+		"category": "",
+		"field": ""
+	},
+	"no-dataset": {
+		"id": "",
+		"category": "",
+		"field": ""
+	},
+	"prodes": {
+		"id": "a5d016e9-3185-4088-b780-cbdaac724c0d",
+		"category": "",
+		"field": ""
+	},
+	"gadm": {
+		"id": "9d6e6723-1215-4714-97f0-6b740e0b3a2e",
+		"category": "",
+		"field": ""
+	}
+}
